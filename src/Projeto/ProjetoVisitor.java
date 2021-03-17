@@ -1,4 +1,4 @@
-// Generated from C:/Users/a64592/IdeaProjects/Projeto1/src/com/CPL\Projeto.g4 by ANTLR 4.9.1
+// Generated from /Users/bidinho/Library/Mobile Documents/com~apple~CloudDocs/Work/UAlg/3_ano/6_sem/COMP/Projeto/CPL_Projeto1/src/com/CPL/Projeto.g4 by ANTLR 4.9.1
 package Projeto;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 

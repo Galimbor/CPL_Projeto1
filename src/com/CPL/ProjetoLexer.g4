@@ -20,6 +20,7 @@ WHITE_SPACE: ' ' -> skip;
 mode RAIVA_MODE;
 
 HAHA : 'a';
+BLALBA : 'b';
 
 DESTROY : 'destroy';
 
