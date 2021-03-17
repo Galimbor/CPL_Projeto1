@@ -1,5 +1,7 @@
 # Ignore everything
 *
 */
+
+
 # But not these files...
-!src/com.CPL/*
+!/src/com.CPL/*

@@ -19,6 +19,7 @@ WHITE_SPACE: ' ' -> skip;
 
 mode RAIVA_MODE;
 
+HAHA : 'a';
 
 DESTROY : 'destroy';
 
