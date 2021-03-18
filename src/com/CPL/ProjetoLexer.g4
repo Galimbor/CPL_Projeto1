@@ -44,15 +44,15 @@ fragment DOUBLE_CARDINAL : '##';
 fragment LOPERATIONAL : '(*';
 fragment ROPERATIONAL : '*)';
 
-EXPLICATIVE : DOUBLE_CARDINAL.*?~('\n')NEWLINE;
-OPERATIONAL : LOPERATIONAL.*ROPERATIONAL;
+EXPLICATIVE : DOUBLE_CARDINAL.*?NEWLINE;
+OPERATIONAL : LOPERATIONAL.*?ROPERATIONAL;
 
 
 /* TERMINATORS */
 
 COMMA : ',';
 SEMI_COLON : ';';
-EXPRESSION_DELIMITERS: '('.*~(')')')';
+EXPRESSION_DELIMITERS : '(' ( EXPRESSION_DELIMITERS | ~[()] )* ')' ;
 
 /* INDENTIFIERS */
 fragment LETTER : [a-zA-Z\u0080-\u00FF];
@@ -65,10 +65,10 @@ IDENTIFIER : LETTER(LETTER| DIGIT | UNDERSCORE)*;
 //INTEGERS
 fragment DIGIT : [0-9];
 INTEGER : ('0' | [1-9]DIGIT*);
-
+NEGATIVE_INTEGER : '-'([1-9]+);
 //REALS
-REAL : INTEGER(.DIGIT+)?('E'[+-]?DIGIT+)?;
-
+REAL : INTEGER('.'DIGIT+)?('E'[+-]?DIGIT+)?;
+NEGATIVE_REAL : '-'([1-9])('.'DIGIT+)?('E'[+-]?DIGIT+)?;
 
 
 /* OTHERS */
@@ -99,12 +99,6 @@ LESSEQ | EQUALS | NOTEQUALS | TILT | AND | OR | EQUAL | INSERT | EXTRACT | AT;
 
 
 
-COMMENTS: '/*'.*'*/' -> skip; //podemos utilizaro  ? após o * para escolher apenas a menor string q corresponde
-
-
-
-
-
 START_STRING : '\'' -> more,pushMode(STRING_MODE);
 
 mode STRING_MODE;
@@ -113,7 +107,7 @@ mode STRING_MODE;
 //STRING_TAB : '~t' ->type(TAB);
 //STRING_CARRIAGE_RETURN : '~r' ->type(CARRIAGE_RETURN);
 
-STRING : .*?~'\''*('\'') -> popMode;
+STRING : .*?~('\'' | '\u0000')*('\'') -> popMode;
 
 /*
 
