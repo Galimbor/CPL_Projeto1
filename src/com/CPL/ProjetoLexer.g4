@@ -65,10 +65,10 @@ IDENTIFIER : LETTER(LETTER| DIGIT | UNDERSCORE)*;
 //INTEGERS
 fragment DIGIT : [0-9];
 INTEGER : ('0' | [1-9]DIGIT*);
-NEGATIVE_INTEGER : '-'([1-9]+);
+//NEGATIVE_INTEGER : '-'([1-9]+);
 //REALS
 REAL : INTEGER('.'DIGIT+)?('E'[+-]?DIGIT+)?;
-NEGATIVE_REAL : '-'([1-9])('.'DIGIT+)?('E'[+-]?DIGIT+)?;
+//NEGATIVE_REAL : '-'([1-9])('.'DIGIT+)?('E'[+-]?DIGIT+)?;
 
 
 /* OTHERS */
