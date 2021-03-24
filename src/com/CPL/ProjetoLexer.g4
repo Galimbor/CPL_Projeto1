@@ -57,18 +57,6 @@ fragment UNDERSCORE : '_';
 IDENTIFIER : LETTER(LETTER| DIGIT | UNDERSCORE)*;
 
 
-
-/* LITERALS */
-
-//INTEGERS
-fragment DIGIT : [0-9];
-INTEGER : ('0' | [1-9]DIGIT*);
-
-//REALS
-REAL : INTEGER('.'DIGIT+)?('E'[+-]?INTEGER)?;
-
-
-
 /* OTHERS */
 LPAREN : '(';
 RPAREN : ')';
@@ -92,6 +80,14 @@ INSERT : '<<';
 EXTRACT: '>>';
 AT : '@';
 
+/* LITERALS */
+
+//INTEGERS
+fragment DIGIT : [0-9];
+INTEGER : ('0' | [1-9]DIGIT*);
+
+//REALS
+REAL : INTEGER('.'DIGIT+)?('E'[+-]?INTEGER)?;
 
 // STRINGS
 
