@@ -107,7 +107,8 @@ mode STRING_MODE;
 //STRING_TAB : '~t' ->type(TAB);
 //STRING_CARRIAGE_RETURN : '~r' ->type(CARRIAGE_RETURN);
 
-STRING : .*?~('\'' | '\u0000')*('\'') -> popMode;
+
+STRING : ~('\'' | '\u0000' | '~')*(('~'.STRING)|('\'')) -> popMode;
 
 /*
 
