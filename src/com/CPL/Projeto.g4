@@ -23,7 +23,4 @@ var_declaration_with:
 
 
 expression:
-
-
-
-
+;
