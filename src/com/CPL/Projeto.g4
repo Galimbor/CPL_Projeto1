@@ -5,4 +5,3 @@ start : expression+ EOF;
 
 expression:
     .;
-

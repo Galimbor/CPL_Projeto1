@@ -1,7 +1,7 @@
 lexer grammar ProjetoLexer;
 
 
-/* KEYWORDS*/
+/* KEYWORDS */
 KEYWORD_INT : 'int' ;
 KEYWORD_BOOL : 'bool';
 KEYWORD_FLOAT : 'float';
@@ -35,7 +35,6 @@ fragment TAB: '\t';
 WHITESPACE: (NEWLINE | CARRIAGE_RETURN | BLANK | TAB) -> skip;
 
 /* COMMENTS */
-
 fragment DOUBLE_CARDINAL : '##';
 fragment LOPERATIONAL : '(*';
 fragment ROPERATIONAL : '*)';
@@ -45,7 +44,6 @@ OPERATIONAL : LOPERATIONAL.*?ROPERATIONAL;
 
 
 /* TERMINATORS */
-
 COMMA : ',';
 SEMI_COLON : ';';
 
@@ -60,6 +58,8 @@ IDENTIFIER : LETTER(LETTER| DIGIT | UNDERSCORE)*;
 /* OTHERS */
 LPAREN : '(';
 RPAREN : ')';
+LBLOCK : '{';
+RBLOCK: '}';
 LBRACKET : '[';
 RBRACKET : ']';
 PLUS : '+';
@@ -90,7 +90,6 @@ INTEGER : ('0' | [1-9]DIGIT*);
 REAL : INTEGER('.'DIGIT+)?('E'[+-]?INTEGER)?;
 
 // STRINGS
-
 START_STRING : '\'' -> more,pushMode(STRING_MODE);
 
 mode STRING_MODE;
