@@ -2,10 +2,10 @@ lexer grammar ProjetoLexer;
 
 
 /* KEYWORDS */
-fragment KEYWORD_INT : 'int' ;
-fragment KEYWORD_BOOL : 'bool';
-fragment KEYWORD_FLOAT : 'float';
-fragment KEYWORD_STRING: 'string';
+KEYWORD_INT : 'int' ;
+KEYWORD_BOOL : 'bool';
+KEYWORD_FLOAT : 'float';
+KEYWORD_STRING: 'string';
 KEYWORD_VOID: 'void';
 KEYWORD_SIZEOF: 'sizeof';
 KEYWORD_NULL: 'null';
@@ -24,11 +24,11 @@ KEYWORD_ELSE: 'else';
 KEYWORD_WRITE: 'write';
 KEYWORD_WRITELN : 'writeln';
 
-
+ARGUMENT_N : 'n';
 
 /* TYPE */
 POINTER : '<' (KEYWORD_INT | KEYWORD_BOOL | KEYWORD_FLOAT | KEYWORD_STRING) '>';
-VARIABLE_TYPE : KEYWORD_INT | KEYWORD_BOOL | KEYWORD_FLOAT | KEYWORD_STRING | POINTER;
+
 
 
 
@@ -85,6 +85,7 @@ EQUAL : '=';
 INSERT : '<<';
 EXTRACT: '>>';
 AT : '@';
+
 
 /* LITERALS */
 
