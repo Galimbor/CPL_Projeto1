@@ -33,9 +33,9 @@ POINTER : '<' (KEYWORD_INT | KEYWORD_BOOL | KEYWORD_FLOAT | KEYWORD_STRING) '>';
 
 
 /* WHITESPACE */
-NEWLINE : '\n';
+NEWLINE : '\n' -> skip;
 CARRIAGE_RETURN: '\r';
-BLANK: ' ';
+BLANK: ' ' ->skip;
 TAB: '\t';
 
 
@@ -70,6 +70,8 @@ LBRACKET : '[';
 RBRACKET : ']';
 PLUS : '+';
 MINUS : '-';
+MULTI : '*';
+DIVIDE : '/';
 QUESTION : '?';
 PERCENT : '%';
 GREATER : '>';
