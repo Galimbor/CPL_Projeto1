@@ -7,11 +7,11 @@ all:
     var_declaration;
 
 
-// Variable Declarations
 
-
+// VARIABLE DECLARATIONS
 
 var_declaration:
+
 var_declaration_without | var_declaration_with;
 
 
@@ -22,5 +22,7 @@ var_declaration_with:
     VARIABLE_TYPE BLANK IDENTIFIER BLANK*? EQUAL BLANK*? expression;
 
 
+
+// EXPRESSSION
 expression:
 ;
