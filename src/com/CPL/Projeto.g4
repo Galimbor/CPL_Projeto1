@@ -4,7 +4,7 @@ options{tokenVocab=ProjetoLexer;}
 start : all+ EOF;
 
 all:
-    var_declaration;
+    var_declaration | function;
 
 
 // VARIABLE DECLARATIONS
@@ -61,10 +61,10 @@ expression1_3 : expression2 expression1_3linha;
 expression1_3linha : comparator4 expression2 expression1_3linha |;
 expression2 : expression3 expression2_linha;
 expression2_linha : binary_op2 expression3 expression2_linha |;
-expression3 : expression5 expression3_linha;
-expression3_linha : binary_op3 expression5 expression3_linha |;
-//expression4 : unary_operators pointer_expr expression4_linha | expression4_linha;
-//expression4_linha : expression5 expression4_linha | ;
+expression3 : expression4 expression3_linha;
+expression3_linha : binary_op3 expression4 expression3_linha |;
+expression4 : (unary_operators expression1)? expression4_linha;
+expression4_linha : expression5 expression4_linha |;
 expression5: expression6 expression5_linha;
 expression5_linha: LBRACKET expression1 RBRACKET expression5_linha |;
 expression6 : LPAREN expression1 RPAREN | simple_expression;
@@ -166,7 +166,7 @@ function : general_function
 //special_f_args : type IDENTIFIER COMMA type IDENTIFIER;
 
 
-general_function : type IDENTIFIER LPAREN general_function_args* RPAREN  body;
+general_function : (type | KEYWORD_VOID) IDENTIFIER LPAREN general_function_args* RPAREN  body;
 
 general_function_args: ( ((type) IDENTIFIER) | (COMMA  general_function_args) )  ;
 
@@ -176,13 +176,13 @@ general_function_args: ( ((type) IDENTIFIER) | (COMMA  general_function_args) ) 
 /* ---BODY---*/
 body : (AT block)? block (EXTRACT block)?;
 
-block : LBLOCK  var_declaration*  instructions+  RBLOCK ;
+block : LBLOCK  var_declaration*  instructions  RBLOCK ;
 
 /*---FUNCTION INVOCATION---*/
 
 function_invocation : (id_invocation | special_invocation);
 
-id_invocation : IDENTIFIER LPAREN list_expressions* RPAREN;
+id_invocation : IDENTIFIER LPAREN list_expressions RPAREN;
 list_expressions : expression | (COMMA expression) ;
 
 
@@ -191,8 +191,8 @@ special_invocation: (at_function | sizeof_function | write_function| writeln_fuc
 
 at_function: AT LPAREN RPAREN;
 sizeof_function : KEYWORD_SIZEOF LPAREN expression RPAREN ;
-write_function: KEYWORD_WRITE LPAREN list_expressions* RPAREN;
-writeln_fuction : KEYWORD_WRITELN LPAREN list_expressions* RPAREN;
+write_function: KEYWORD_WRITE LPAREN list_expressions RPAREN;
+writeln_fuction : KEYWORD_WRITELN LPAREN list_expressions RPAREN;
 
 
 //Instructions
@@ -227,4 +227,4 @@ cicle_instruction: KEYWORD_WHILE expression KEYWORD_DO instructions (KEYWORD_FIN
 
 /*----------SUB-BLOCK---------------*/
 
-subblock_instruction: LBLOCK instructions* RBLOCK;
+subblock_instruction: LBLOCK instructions RBLOCK;
