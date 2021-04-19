@@ -31,8 +31,7 @@ var_declaration_init:
 An expression can be either a simple expression or an expression evaluation.
 */
 expression:
-         (simple_expression
-        | expression_evaluation)+;
+         expression_evaluation;
 
 
 
@@ -45,27 +44,48 @@ simple_expression:
    | KEYWORD_TRUE
    | KEYWORD_FALSE
    | IDENTIFIER
-   | function_invocation;
+   | function_invocation
+;
+
+//bracketLinha:
+//    (LBRACKET expression RBRACKET bracketLinha) | /* epsilon*/;
+
+binary_op2: ADD | SUB;
+binary_op3: MUL | DIV;
+
+expression1 : expression1_2 expression1_1linha;
+expression1_1linha : comparator2 expression1_2 expression1_1linha |;
+expression1_2 : expression1_3 expression1_2linha;
+expression1_2linha : comparator3 expression1_3 expression1_2linha |;
+expression1_3 : expression2 expression1_3linha;
+expression1_3linha : comparator4 expression2 expression1_3linha |;
+expression2 : expression3 expression2_linha;
+expression2_linha : binary_op2 expression3 expression2_linha |;
+expression3 : expression5 expression3_linha;
+expression3_linha : binary_op3 expression5 expression3_linha |;
+//expression4 : unary_operators pointer_expr expression4_linha | expression4_linha;
+//expression4_linha : expression5 expression4_linha | ;
+expression5: expression6 expression5_linha;
+expression5_linha: LBRACKET expression1 RBRACKET expression5_linha |;
+expression6 : LPAREN expression1 RPAREN | simple_expression;
 
 
-bracketLinha:
-    (LBRACKET expression RBRACKET bracketLinha) | /* epsilon*/;
 
 //TODO
 expression_evaluation:
-
-     LPAREN expression+ RPAREN
-    | ( LBRACKET expression RBRACKET bracketLinha)
-    | unary_operators simple_expression
+    expression1
+//     LPAREN expression+ RPAREN
+//    | ( LBRACKET expression RBRACKET bracketLinha)
+//    | unary_operators expression
 //    | LBRACKET expression RBRACKET expression?
 //    | comparator expression
 
 //
 //
 //    //TODO Rever recursividade de binarios com expressões, expression->expression_evaluating;  expression_evaluating-> expression;
-    |  (MULTI | DIVIDE) expression
-    |   (PLUS | MINUS)  expression
-    |  comparator expression  ;
+//    |  (MULTI | DIVIDE) expression
+//    |   (PLUS | MINUS)  expression
+//    |  comparator expression  ;
 //
 //
 //    expression_evaluation_second:
@@ -82,23 +102,22 @@ expression_evaluation:
 */
 //pointer_indexing:
 //    pointer_expr LBRACKET expression RBRACKET;
+;
 
 //TODO same as simple expression
 unary_operators:
-    MINUS
-    | PLUS
+    SUB
+    | ADD
     | TILT
     | QUESTION;
 
 /*
 Identifiers with binary operators, represents pointer to variable
 */
-//pointer_expr:
-//        LPAREN pointer_expr RPAREN
-//      | pointer_expr (MULTI | DIVIDE) (pointer_expr | int_expr)
-//      | pointer_expr (PLUS | MINUS) (pointer_expr | int_expr)
-//      | QUESTION pointer_indexing
-//      | IDENTIFIER;
+pointer_expr:
+      simple_expression (SUB | ADD) (simple_expression)
+      | simple_expression (MUL | DIV) (simple_expression)
+      | simple_expression;
 
 //TODO: is this really necessary? used for pointer indexing index
 //int_expr:
@@ -108,17 +127,20 @@ Identifiers with binary operators, represents pointer to variable
 //    | INTEGER
 //;
 
-//TODO: same as simple expression
-comparator:
+
+comparator4:
     LESSER
     |GREATER
     |GREATEQ
     |LESSEQ
     |EQUALS
     |NOTEQUALS
-    |AND
-    |OR
 ;
+comparator3:
+    AND;
+
+comparator2:
+    OR;
 
 //
 //        (LPAREN expression RPAREN)
@@ -134,21 +156,21 @@ comparator:
 
 /*---FUNCTION DECLARATION-------*/
 
-function : general_function | special_function;
+function : general_function
+//| special_function
+;
 
 
-special_function : type KEYWORD_ALG LPAREN special_f_args RPAREN body SEMI_COLON;
+//special_function : type KEYWORD_ALG LPAREN special_f_args RPAREN body SEMI_COLON;
+//
+//special_f_args : type IDENTIFIER COMMA type IDENTIFIER;
 
-special_f_args : type ARGUMENT_N COMMA type IDENTIFIER;
 
-
-general_function : general_function_type IDENTIFIER LPAREN general_function_args* RPAREN  body;
-
-general_function_type: type;
+general_function : type IDENTIFIER LPAREN general_function_args* RPAREN  body;
 
 general_function_args: ( ((type) IDENTIFIER) | (COMMA  general_function_args) )  ;
 
-//function_arguments: ((KEYWORD_INT | KEYWORD_BOOL | KEYWORD_FLOAT | KEYWORD_STRING | POINTER) IDENTIFIER) ( (COMMA  (KEYWORD_INT | KEYWORD_FLOAT | KEYWORD_STRING | POINTER) IDENTIFIER)+ )? ;
+//function_arguments: (type IDENTIFIER) ( (COMMA  type IDENTIFIER)+ )? ;
 
 
 /* ---BODY---*/
@@ -160,18 +182,17 @@ block : LBLOCK  var_declaration*  instructions+  RBLOCK ;
 
 function_invocation : (id_invocation | special_invocation);
 
-id_invocation : IDENTIFIER LPAREN list_expressions* RPAREN   ;
-//list_expressions : expression (COMMA expression)* ;
+id_invocation : IDENTIFIER LPAREN list_expressions* RPAREN;
 list_expressions : expression | (COMMA expression) ;
 
 
 
 special_invocation: (at_function | sizeof_function | write_function| writeln_fuction);
 
-at_function: AT LPAREN RPAREN SEMI_COLON;
-sizeof_function : KEYWORD_SIZEOF LPAREN expression RPAREN SEMI_COLON;
-write_function: KEYWORD_WRITE LPAREN list_expressions* RPAREN SEMI_COLON;
-writeln_fuction : KEYWORD_WRITELN LPAREN list_expressions* RPAREN SEMI_COLON;
+at_function: AT LPAREN RPAREN;
+sizeof_function : KEYWORD_SIZEOF LPAREN expression RPAREN ;
+write_function: KEYWORD_WRITE LPAREN list_expressions* RPAREN;
+writeln_fuction : KEYWORD_WRITELN LPAREN list_expressions* RPAREN;
 
 
 //Instructions
@@ -189,6 +210,7 @@ control_instructions: KEYWORD_LEAVE | KEYWORD_RESTART | KEYWORD_RETURN expressio
 
 
 // EXPRESSION É INDEXAÇÃO DE PONTEIROS
+//TODO pointer expression
 attribution_instruction: (IDENTIFIER | expression) EQUAL expression;
 
 /*-------CONDITIONAL ATTRIBUTION-----------*/
