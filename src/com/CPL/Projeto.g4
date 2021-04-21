@@ -53,27 +53,45 @@ simple_expression:
 binary_op2: ADD | SUB;
 binary_op3: MUL | DIV;
 
-expression1 : expression1_2 expression1_1linha;
-expression1_1linha : comparator2 expression1_2 expression1_1linha |;
-expression1_2 : expression1_3 expression1_2linha;
-expression1_2linha : comparator3 expression1_3 expression1_2linha |;
-expression1_3 : expression2 expression1_3linha;
-expression1_3linha : comparator4 expression2 expression1_3linha |;
-expression2 : expression3 expression2_linha;
-expression2_linha : binary_op2 expression3 expression2_linha |;
-expression3 : expression4 expression3_linha;
-expression3_linha : binary_op3 expression4 expression3_linha |;
-expression4 : (unary_operators expression1)? expression4_linha;
-expression4_linha : expression5 expression4_linha |;
-expression5: expression6 expression5_linha;
-expression5_linha: LBRACKET expression1 RBRACKET expression5_linha |;
-expression6 : LPAREN expression1 RPAREN | simple_expression;
+exp_comp_or : exp_comp_and exp_comp_or_linha;
+exp_comp_or_linha : comparator2 exp_comp_and exp_comp_or_linha |;
+
+exp_comp_and : exp_comp exp_comp_and_linha;
+exp_comp_and_linha : comparator3 exp_comp exp_comp_and_linha |;
+
+exp_comp : exp_add_sub exp_comp_linha;
+exp_comp_linha : comparator4 exp_add_sub exp_comp_linha |;
+
+exp_add_sub : exp_mul_div exp_add_sub_linha;
+exp_add_sub_linha : binary_op2 exp_mul_div exp_add_sub_linha |;
+
+exp_mul_div : exp_unary_op exp_mul_div_linha;
+exp_mul_div_linha : binary_op3 exp_unary_op exp_mul_div_linha |;
+
+//exp_mul_div : exp_unary_op exp_mul_div_linha;
+//exp_mul_div_linha : binary_op3 exp_unary_op exp_mul_div_linha |;
+
+exp_unary_op : (unary_operators_reg exp_comp_or)| exp_pointer_indx;
+exp_unary_op_linha : exp_pointer_indx exp_unary_op_linha |;
+
+exp_pointer_indx:  exp_paren  exp_pointer_indx_linha ;
+exp_pointer_indx_linha: LBRACKET exp_comp_or RBRACKET exp_pointer_indx_linha |;
+
+exp_paren :  LPAREN exp_comp_or RPAREN |  simple_expression;
+
+
+exp_pointer_indx_aux:    (QUESTION? IDENTIFIER)   exp_pointer_indx_aux_2;
+
+exp_pointer_indx_aux_2: ((IDENTIFIER | INTEGER )
+                        |(binary_op2 | binary_op3) exp_pointer_indx_aux_2
+                        | LPAREN exp_pointer_indx_aux_2 RPAREN
+                        | ) ;
 
 
 
 //TODO
 expression_evaluation:
-    expression1
+    exp_comp_or
 //     LPAREN expression+ RPAREN
 //    | ( LBRACKET expression RBRACKET bracketLinha)
 //    | unary_operators expression
@@ -105,11 +123,15 @@ expression_evaluation:
 ;
 
 //TODO same as simple expression
-unary_operators:
+unary_operators_reg:
     SUB
     | ADD
     | TILT
     | QUESTION;
+
+
+unary_pointer:
+     QUESTION;
 
 /*
 Identifiers with binary operators, represents pointer to variable
