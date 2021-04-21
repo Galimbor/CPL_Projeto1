@@ -47,8 +47,6 @@ simple_expression:
    | function_invocation
 ;
 
-//bracketLinha:
-//    (LBRACKET expression RBRACKET bracketLinha) | /* epsilon*/;
 
 binary_op2: ADD | SUB;
 binary_op3: MUL | DIV;
@@ -68,10 +66,7 @@ exp_add_sub_linha : binary_op2 exp_mul_div exp_add_sub_linha |;
 exp_mul_div : exp_unary_op exp_mul_div_linha;
 exp_mul_div_linha : binary_op3 exp_unary_op exp_mul_div_linha |;
 
-//exp_mul_div : exp_unary_op exp_mul_div_linha;
-//exp_mul_div_linha : binary_op3 exp_unary_op exp_mul_div_linha |;
-
-exp_unary_op : (unary_operators_reg exp_comp_or)| exp_pointer_indx;
+exp_unary_op : (unary_operators exp_comp_or)| exp_pointer_indx;
 exp_unary_op_linha : exp_pointer_indx exp_unary_op_linha |;
 
 exp_pointer_indx:  exp_paren  exp_pointer_indx_linha ;
@@ -80,74 +75,18 @@ exp_pointer_indx_linha: LBRACKET exp_comp_or RBRACKET exp_pointer_indx_linha |;
 exp_paren :  LPAREN exp_comp_or RPAREN |  simple_expression;
 
 
-exp_pointer_indx_aux:    (QUESTION? IDENTIFIER)   exp_pointer_indx_aux_2;
-
-exp_pointer_indx_aux_2: ((IDENTIFIER | INTEGER )
-                        |(binary_op2 | binary_op3) exp_pointer_indx_aux_2
-                        | LPAREN exp_pointer_indx_aux_2 RPAREN
-                        | ) ;
-
-
-
 //TODO
 expression_evaluation:
-    exp_comp_or
-//     LPAREN expression+ RPAREN
-//    | ( LBRACKET expression RBRACKET bracketLinha)
-//    | unary_operators expression
-//    | LBRACKET expression RBRACKET expression?
-//    | comparator expression
-
-//
-//
-//    //TODO Rever recursividade de binarios com expressões, expression->expression_evaluating;  expression_evaluating-> expression;
-//    |  (MULTI | DIVIDE) expression
-//    |   (PLUS | MINUS)  expression
-//    |  comparator expression  ;
-//
-//
-//    expression_evaluation_second:
-//     ((PLUS | MINUS) expression_evaluation_second | /*epsilon*/);
-//
-//    expression_evaluation_first:?a[1]
-//    ((MULTI | DIVIDE) expression_evaluation_first | /*epsilon*/);
-//
-//    expression_evaluation_third:
-//       (comparator expression_evaluation_third | /*epsilon*/);
-
-/*
-
-*/
-//pointer_indexing:
-//    pointer_expr LBRACKET expression RBRACKET;
-;
+    exp_comp_or;
 
 //TODO same as simple expression
-unary_operators_reg:
+unary_operators:
     SUB
     | ADD
     | TILT
     | QUESTION;
 
 
-unary_pointer:
-     QUESTION;
-
-/*
-Identifiers with binary operators, represents pointer to variable
-*/
-pointer_expr:
-      simple_expression (SUB | ADD) (simple_expression)
-      | simple_expression (MUL | DIV) (simple_expression)
-      | simple_expression;
-
-//TODO: is this really necessary? used for pointer indexing index
-//int_expr:
-//      LPAREN int_expr RPAREN
-//    | int_expr (MULTI | DIVIDE) int_expr
-//    | int_expr (PLUS | MINUS) int_expr
-//    | INTEGER
-//;
 
 
 comparator4:
@@ -164,15 +103,6 @@ comparator3:
 comparator2:
     OR;
 
-//
-//        (LPAREN expression RPAREN)
-//      | pointer_indexing
-//      | int_expr
-//      | pointer_expr
-//      | pointer_extraction
-//      | unary_operators expression
-//      | expression comparator expression
-//      | simple_expression
 
 //Functions
 
@@ -188,24 +118,25 @@ function : general_function
 //special_f_args : type IDENTIFIER COMMA type IDENTIFIER;
 
 
-general_function : (type | KEYWORD_VOID) IDENTIFIER LPAREN general_function_args* RPAREN  body;
+general_function : (type | KEYWORD_VOID) IDENTIFIER LPAREN general_function_args RPAREN  body;
 
-general_function_args: ( ((type) IDENTIFIER) | (COMMA  general_function_args) )  ;
+general_function_args:  function_arg | function_arg COMMA general_function_args   ;
 
-//function_arguments: (type IDENTIFIER) ( (COMMA  type IDENTIFIER)+ )? ;
+function_arg : type IDENTIFIER;
+
 
 
 /* ---BODY---*/
 body : (AT block)? block (EXTRACT block)?;
 
-block : LBLOCK  var_declaration*  instructions  RBLOCK ;
+block : LBLOCK  var_declaration*  instructions+  RBLOCK ;
 
 /*---FUNCTION INVOCATION---*/
 
 function_invocation : (id_invocation | special_invocation);
 
 id_invocation : IDENTIFIER LPAREN list_expressions RPAREN;
-list_expressions : expression | (COMMA expression) ;
+list_expressions : expression | (COMMA list_expressions) |  ;
 
 
 
@@ -249,4 +180,4 @@ cicle_instruction: KEYWORD_WHILE expression KEYWORD_DO instructions (KEYWORD_FIN
 
 /*----------SUB-BLOCK---------------*/
 
-subblock_instruction: LBLOCK instructions RBLOCK;
+subblock_instruction: LBLOCK instructions+ RBLOCK;

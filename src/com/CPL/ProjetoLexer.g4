@@ -24,7 +24,7 @@ KEYWORD_ELSE: 'else';
 KEYWORD_WRITE: 'write';
 KEYWORD_WRITELN : 'writeln';
 
-ARGUMENT_N : 'n';
+
 
 /* TYPE */
 
