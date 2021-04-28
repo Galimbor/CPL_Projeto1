@@ -52,7 +52,7 @@ binary_op2: ADD | SUB;
 binary_op3: MUL | DIV;
 
 exp_comp_or : exp_comp_and exp_comp_or_linha;
-exp_comp_or_linha : comparator2 exp_comp_and exp_comp_or_linha |;
+exp_comp_or_linha : comparator2 exp_comp_and exp_comp_or_linha | ;
 
 exp_comp_and : exp_comp exp_comp_and_linha;
 exp_comp_and_linha : comparator3 exp_comp exp_comp_and_linha |;
@@ -66,13 +66,19 @@ exp_add_sub_linha : binary_op2 exp_mul_div exp_add_sub_linha |;
 exp_mul_div : exp_unary_op exp_mul_div_linha;
 exp_mul_div_linha : binary_op3 exp_unary_op exp_mul_div_linha |;
 
-exp_unary_op : (unary_operators exp_comp_or)| exp_pointer_indx;
+//(IDENTIFIER | exp_pointer_indx)
+exp_unary_op : (unary_operators  exp_pointer_indx )| exp_pointer_indx;
 exp_unary_op_linha : exp_pointer_indx exp_unary_op_linha |;
 
 exp_pointer_indx:  exp_paren  exp_pointer_indx_linha ;
 exp_pointer_indx_linha: LBRACKET exp_comp_or RBRACKET exp_pointer_indx_linha |;
 
 exp_paren :  LPAREN exp_comp_or RPAREN |  simple_expression;
+
+
+//exp_pointer_ind_2 : exp_paren  exp_pointer_indx_linha_2 ;
+//exp_pointer_indx_linha_2: LBRACKET exp_comp_or RBRACKET exp_pointer_indx_linha |;
+//exp_paren_2 :  LPAREN exp_comp_or RPAREN |  simple_expression;
 
 
 //TODO
