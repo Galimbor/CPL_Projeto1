@@ -200,9 +200,9 @@ writeln_fuction :
 
 /*-------INSTRUCTIONS-------*/
 instruction :
-        expression
-    |   control_instructions
-    |   attribution_instruction
+        expression SEMI_COLON
+    |   control_instructions SEMI_COLON
+    |   attribution_instruction SEMI_COLON
     |   conditional_instruction
     |   cicle_instruction
     |   subblock_instruction;
