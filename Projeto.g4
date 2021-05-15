@@ -1,4 +1,4 @@
-parser grammar Projeto;
+grammar Projeto;
 options{tokenVocab=ProjetoLexer;}
 
 program :
