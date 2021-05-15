@@ -1,4 +1,4 @@
-grammar Projeto;
+parser grammar Projeto;
 options{tokenVocab=ProjetoLexer;}
 
 program :
@@ -9,16 +9,15 @@ program :
 
 /*-------DECLARATION-------*/
 declaration:
-        var_declaration {notifyErrorListeners("Missing the ';' after declaration");}
-    |   var_declaration SEMI_COLON SEMI_COLON {notifyErrorListeners("Extraneous ';' after declaration");}
-    |   var_declaration SEMI_COLON
+        var_declaration SEMI_COLON  {notifyErrorListeners("Extraneous ';' after declaration");}
+    |   var_declaration
     |   function;
 
 
 /*-------VARIABLE DECLARATION-------*/
 var_declaration:
-        var_declaration_simple
-    |   var_declaration_init;
+        var_declaration_simple SEMI_COLON
+    |   var_declaration_init SEMI_COLON;
 
 
 /*-------TYPE-------*/
@@ -26,7 +25,7 @@ type :
         KEYWORD_INT | KEYWORD_FLOAT | KEYWORD_STRING | (LESSER type GREATER);
 
 var_declaration_simple:
-        type IDENTIFIER (SEMI_COLON | (COMMA IDENTIFIER)+)* ;
+        type IDENTIFIER ((COMMA IDENTIFIER)+)* ;
 
 
 var_declaration_init:
@@ -42,14 +41,14 @@ expression:
 
 
 simple_expression:
-        INTEGER
-    |   REAL
-    |   STRING
-    |   KEYWORD_NULL
-    |   KEYWORD_TRUE
-    |   KEYWORD_FALSE
-    |   IDENTIFIER
-    |   function_invocation
+        INTEGER                 # Int
+    |   REAL                    # Real
+    |   STRING                  # String
+    |   KEYWORD_NULL            # Null
+    |   KEYWORD_TRUE            # True
+    |   KEYWORD_FALSE           # False
+    |   IDENTIFIER              # Var
+    |   function_invocation     # Call
 ;
 
 
@@ -61,7 +60,6 @@ expression_evaluation:
     |   expression_evaluation LBRACKET expression_evaluation {notifyErrorListeners("Missing ']' to match '['");}
     |   expression_evaluation LBRACKET expression_evaluation RBRACKET RBRACKET{notifyErrorListeners("Extraneous ']'");}
     |   expression_evaluation LBRACKET expression_evaluation RBRACKET
-//    |    LBRACKET expression RBRACKET
     |   unary_operators expression_evaluation
     |   expression_evaluation binary_op_MUL_DIV expression_evaluation
     |   expression_evaluation binary_op_ADD_SUB expression_evaluation
@@ -161,8 +159,8 @@ comparator_OR:
 
 /*-------FUNCTION DECLARATION-------*/
 function :
-        IDENTIFIER LPAREN function_args RPAREN body {notifyErrorListeners("Missing type of function");}
-    |   (type | KEYWORD_VOID) IDENTIFIER LPAREN function_args RPAREN body;
+        IDENTIFIER LPAREN function_args* RPAREN body {notifyErrorListeners("Missing type of function");}
+    |   (type | KEYWORD_VOID) IDENTIFIER LPAREN function_args* RPAREN body;
 
 function_args_old:
         function_arg
@@ -185,9 +183,10 @@ body :
         (AT block)? block (EXTRACT block)?;
 
 block :
-        LBLOCK var_declaration*  instruction+  {notifyErrorListeners("Missing '}' to match '{'");}
-    |   LBLOCK var_declaration*  instruction+ RBLOCK RBLOCK {notifyErrorListeners("Extraneous '}'");}
-    |   LBLOCK var_declaration*  instruction+  RBLOCK ;
+        LBLOCK (var_declaration*  instruction+)*  {notifyErrorListeners("Missing '}' to match '{'");}
+    |   LBLOCK (var_declaration*  instruction+)* RBLOCK RBLOCK {notifyErrorListeners("Extraneous '}'");}
+    |   LBLOCK (var_declaration* instruction+)* RBLOCK;
+
 
 
 /*---FUNCTION INVOCATION---*/
