@@ -1,11 +1,12 @@
 package ualg.com;
+
+import Alg.Projeto;
+import Alg.ProjetoLexer;
 import Alg.TypeChecker;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import Alg.Projeto;
-import Alg.ProjetoLexer;
 
 import java.io.IOException;
 
@@ -24,11 +25,9 @@ public class Main {
             TypeChecker listener = new TypeChecker();
             walker.walk(listener, tree);
 
-            if(!listener.validated) System.exit(1);
+            if (!listener.validated) System.exit(1);
 
-        }
-        catch(IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

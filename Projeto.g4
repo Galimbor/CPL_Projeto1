@@ -22,15 +22,23 @@ var_declaration:
 
 /*-------TYPE-------*/
 type :
-        KEYWORD_INT | KEYWORD_FLOAT | KEYWORD_STRING | (LESSER type GREATER);
+            KEYWORD_INT             # Int_type
+         |  KEYWORD_FLOAT           # Int_type
+         |  KEYWORD_STRING          # String_type
+         |  LESSER type GREATER     # Pointer_type;
+
+function_type:
+        type | KEYWORD_VOID;
+
 
 var_declaration_simple:
         type IDENTIFIER ((COMMA IDENTIFIER)+)* ;
 
 
 var_declaration_init:
-        type IDENTIFIER EQUAL expression
-    |   type IDENTIFIER EQUAL (LBRACKET expression RBRACKET | KEYWORD_NULL) ;
+        type IDENTIFIER EQUAL expression                                        # Var_declaration_normal
+    |   type IDENTIFIER EQUAL (LBRACKET expression RBRACKET | KEYWORD_NULL)     # Var_declaration_pointer
+    ;
 
 
 
@@ -48,26 +56,26 @@ simple_expression:
     |   KEYWORD_TRUE            # True
     |   KEYWORD_FALSE           # False
     |   IDENTIFIER              # Var
-    |   function_invocation     # Call
+    |   function_invocation     # Function_call
 ;
 
 
 //WITH ANTLR
 expression_evaluation:
-        LPAREN expression_evaluation {notifyErrorListeners("Missing ')' to match '('");}
-    |   LPAREN expression_evaluation RPAREN RPAREN {notifyErrorListeners("Extraneous ')'");}
-    |   LPAREN expression_evaluation RPAREN
-    |   expression_evaluation LBRACKET expression_evaluation {notifyErrorListeners("Missing ']' to match '['");}
-    |   expression_evaluation LBRACKET expression_evaluation RBRACKET RBRACKET{notifyErrorListeners("Extraneous ']'");}
-    |   expression_evaluation LBRACKET expression_evaluation RBRACKET
-    |   unary_operators expression_evaluation
-    |   expression_evaluation binary_op_MUL_DIV expression_evaluation
-    |   expression_evaluation binary_op_ADD_SUB expression_evaluation
-    |   expression_evaluation comparators {notifyErrorListeners("Missing expression after comparator");}
-    |   expression_evaluation comparators expression_evaluation
-    |   expression_evaluation comparator_AND expression_evaluation
-    |   expression_evaluation comparator_OR expression_evaluation
-    |   simple_expression;
+        LPAREN expression_evaluation {notifyErrorListeners("Missing ')' to match '('");}    # ParenExpErr1
+    |   LPAREN expression_evaluation RPAREN RPAREN {notifyErrorListeners("Extraneous ')'");}    #ParenExpErr2
+    |   LPAREN expression_evaluation RPAREN     # ParenExp
+    |   expression_evaluation LBRACKET expression_evaluation {notifyErrorListeners("Missing ']' to match '['");}    # PointerExpErr1
+    |   expression_evaluation LBRACKET expression_evaluation RBRACKET RBRACKET{notifyErrorListeners("Extraneous ']'");} # PointerExpErr2
+    |   expression_evaluation LBRACKET expression_evaluation RBRACKET # PointerExp
+    |   unary_operators expression_evaluation   # UnaryExp
+    |   expression_evaluation binary_op_MUL_DIV expression_evaluation   # MulDiv
+    |   expression_evaluation binary_op_ADD_SUB expression_evaluation   # AddSub
+    |   expression_evaluation comparators {notifyErrorListeners("Missing expression after comparator");}        # CompOtherErr1
+    |   expression_evaluation comparators expression_evaluation         # CompOther
+    |   expression_evaluation comparator_AND expression_evaluation      # CompAnd
+    |   expression_evaluation comparator_OR expression_evaluation       # CompOr
+    |   simple_expression                                               # SimpExp;
 
 
 //WITHOUT ANTLR
@@ -126,18 +134,21 @@ exp_paren :
 
 /*-------OPERATORS-------*/
 unary_operators:
-        SUB
-    |   ADD
-    |   TILT
-    |   QUESTION;
+        SUB         # Simetric
+    |   ADD         # Identity
+    |   TILT        # Negation
+    |   QUESTION    # PointerExtr
+    ;
 
 binary_op_ADD_SUB:
-        ADD
-    |   SUB;
+        ADD         # Add
+    |   SUB         # Sub
+    ;
 
 binary_op_MUL_DIV:
-        MUL
-    |   DIV;
+        MUL         # Mul
+    |   DIV         # Div
+    ;
 
 comparators:
         LESSER
@@ -160,7 +171,7 @@ comparator_OR:
 /*-------FUNCTION DECLARATION-------*/
 function :
         IDENTIFIER LPAREN function_args* RPAREN body {notifyErrorListeners("Missing type of function");}
-    |   (type | KEYWORD_VOID) IDENTIFIER LPAREN function_args* RPAREN body;
+    |   function_type IDENTIFIER LPAREN function_args* RPAREN body;
 
 function_args_old:
         function_arg
@@ -180,13 +191,16 @@ function_arg :
 
 /*-------BODY-------*/
 body :
-        (AT block)? block (EXTRACT block)?;
+        prologue? central epilogue?;
+
+prologue: AT block;
+central: block;
+epilogue: EXTRACT block;
 
 block :
         LBLOCK (var_declaration*  instruction+)*  {notifyErrorListeners("Missing '}' to match '{'");}
     |   LBLOCK (var_declaration*  instruction+)* RBLOCK RBLOCK {notifyErrorListeners("Extraneous '}'");}
     |   LBLOCK (var_declaration* instruction+)* RBLOCK;
-
 
 
 /*---FUNCTION INVOCATION---*/
@@ -225,23 +239,24 @@ writeln_fuction :
 
 /*-------INSTRUCTIONS-------*/
 instruction :
-        expression {notifyErrorListeners("Missing ';'");}
-    |   expression SEMI_COLON
-    |   control_instructions SEMI_COLON
-    |   attribution_instruction SEMI_COLON
-    |   conditional_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");}
-    |   conditional_instruction
-    |   cicle_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");}
-    |   cicle_instruction
-    |   subblock_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");}
-    |   subblock_instruction;
+        expression {notifyErrorListeners("Missing ';'");}   # Expression_insErr1
+    |   expression SEMI_COLON               # Expression_ins
+    |   control_instructions SEMI_COLON     # Control_ins
+    |   attribution_instruction SEMI_COLON  # Attribution_ins
+    |   conditional_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");} # Conditional_insErr1
+    |   conditional_instruction             # Conditional_ins
+    |   cicle_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");}    # Cicle_insErr1
+    |   cicle_instruction                   # Cicle_ins
+    |   subblock_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");} # Subblock_insErr1
+    |   subblock_instruction                # Subblock_ins
+    ;
 
 
 /*-----CONTROL INSTRUCTIONS------*/
 control_instructions:
-        KEYWORD_LEAVE
-    |   KEYWORD_RESTART
-    |   KEYWORD_RETURN expression?;
+        KEYWORD_LEAVE                   # Leave
+    |   KEYWORD_RESTART                 # Restart
+    |   KEYWORD_RETURN expression?      # Return;
 
 
 /*------ATRIBUTION----------*/

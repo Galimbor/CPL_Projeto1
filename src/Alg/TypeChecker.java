@@ -43,7 +43,40 @@ public class TypeChecker extends ProjetoBaseListener {
     }
 
 
-    public void exitVar_declaration(Projeto.ProgramContext ctx) {
-
+    public void enterFunction(Projeto.FunctionContext ctx) {
+        FunctionSymbol f;
+        String functionName = ctx.IDENTIFIER().getText();
+        String type = ctx.function_type().start.getText();
+        f = new FunctionSymbol(type, functionName);
+        if (defineSymbol(ctx, f)) {
+            this.currentFunction = f;
+            this.currentScope = new Scope(this.currentScope);
+        }
     }
+
+    //this method is called after the block ends
+    //functionDecl : type ID '(' formalParameters? ')' block;
+    public void exitFunction(Projeto.FunctionContext ctx) {
+        //imprimir o enquadramento local, só para efeito de debug
+        System.out.println("Local scope for function " + this.currentFunction.name + ": " + this.currentScope.toString());
+        this.currentFunction = null;
+
+        //temos de sair do contexto local da função
+        currentScope = currentScope.getParentScope();
+    }
+
+    //function_arg: function_arg IDENTIFIER
+    public void exitFunction_arg(Projeto.Function_argContext ctx) {
+        //temos de fazer 2 coisas, adicionar o parametro formal ao enquadramento local atual, e adicionar à lista
+        //de argumentos
+        String type = ctx.type().start.getText();
+        String name = ctx.IDENTIFIER().getText();
+
+        Symbol parameter = new Symbol(type, name);
+        if (defineSymbol(ctx, parameter) && this.currentFunction != null) {
+            this.currentFunction.arguments.add(parameter);
+        }
+    }
+
+    
 }

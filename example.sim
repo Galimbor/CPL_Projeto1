@@ -4,11 +4,13 @@ float a;
 int f(int x, float y, int x) {
     float z;
     float x;
+    int y=1;
+    int x = 2;
     g();
-    i = 3;
-    k = 6;
+    int i = 3;
+    int k = 6;
     int k;
-    g = 4;
+    int g = 4;
     return x + y;
 }
 
