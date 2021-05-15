@@ -6,7 +6,6 @@ program :
     |   declaration+ EOF;
 
 
-
 /*-------DECLARATION-------*/
 declaration:
         var_declaration SEMI_COLON  {notifyErrorListeners("Extraneous ';' after declaration");}
@@ -22,13 +21,13 @@ var_declaration:
 
 /*-------TYPE-------*/
 type :
-            KEYWORD_INT             # Int_type
-         |  KEYWORD_FLOAT           # Int_type
-         |  KEYWORD_STRING          # String_type
-         |  LESSER type GREATER     # Pointer_type;
+            INT
+         |  FLOAT
+         |  STRING
+         |  POINTER;
 
 function_type:
-        type | KEYWORD_VOID;
+        type | VOID;
 
 
 var_declaration_simple:
@@ -36,8 +35,8 @@ var_declaration_simple:
 
 
 var_declaration_init:
-        type IDENTIFIER EQUAL expression                                        # Var_declaration_normal
-    |   type IDENTIFIER EQUAL (LBRACKET expression RBRACKET | KEYWORD_NULL)     # Var_declaration_pointer
+        type IDENTIFIER EQUAL expression
+    |   type IDENTIFIER EQUAL (LBRACKET expression RBRACKET | NULL)
     ;
 
 
@@ -52,9 +51,9 @@ simple_expression:
         INTEGER                 # Int
     |   REAL                    # Real
     |   STRING                  # String
-    |   KEYWORD_NULL            # Null
-    |   KEYWORD_TRUE            # True
-    |   KEYWORD_FALSE           # False
+    |   NULL                    # Null
+    |   TRUE                    # True
+    |   FALSE                   # False
     |   IDENTIFIER              # Var
     |   function_invocation     # Function_call
 ;
@@ -229,12 +228,12 @@ at_function:
         AT LPAREN expression RPAREN {notifyErrorListeners("@ must be called without arguments");}
     |   AT LPAREN RPAREN;
 sizeof_function :
-        KEYWORD_SIZEOF LPAREN RPAREN {notifyErrorListeners("sizeof() must have one argument");}
-    |   KEYWORD_SIZEOF LPAREN expression RPAREN ;
+        SIZEOF LPAREN RPAREN {notifyErrorListeners("sizeof() must have one argument");}
+    |   SIZEOF LPAREN expression RPAREN ;
 write_function:
-        KEYWORD_WRITE LPAREN list_expressions? RPAREN;
+        WRITE LPAREN list_expressions? RPAREN;
 writeln_fuction :
-        KEYWORD_WRITELN LPAREN list_expressions? RPAREN;
+        WRITELN LPAREN list_expressions? RPAREN;
 
 
 /*-------INSTRUCTIONS-------*/
@@ -254,9 +253,9 @@ instruction :
 
 /*-----CONTROL INSTRUCTIONS------*/
 control_instructions:
-        KEYWORD_LEAVE                   # Leave
-    |   KEYWORD_RESTART                 # Restart
-    |   KEYWORD_RETURN expression?      # Return;
+        LEAVE                   # Leave
+    |   RESTART                 # Restart
+    |   RETURN expression?      # Return;
 
 
 /*------ATRIBUTION----------*/
@@ -266,12 +265,12 @@ attribution_instruction:
 
 /*-------CONDITIONAL ATTRIBUTION-----------*/
 conditional_instruction:
-        KEYWORD_IF expression KEYWORD_THEN instruction (KEYWORD_ELSE instruction)?;
+        IF expression THEN instruction (ELSE instruction)?;
 
 
 /*---------CICLE-----------*/
 cicle_instruction:
-        KEYWORD_WHILE expression KEYWORD_DO instruction (KEYWORD_FINALLY instruction)?;
+        WHILE expression DO instruction (FINALLY instruction)?;
 
 
 /*----------SUB-BLOCK---------------*/

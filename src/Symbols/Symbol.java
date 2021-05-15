@@ -5,12 +5,12 @@ import java.util.Locale;
 //classe apenas com campos
 public class Symbol {
 
-    public enum PType
-    {
+    public enum PType {
         INT,
         FLOAT,
         VOID,
         ERROR,
+        POINTER,
     }
 
     public PType type;
@@ -18,14 +18,16 @@ public class Symbol {
     public Scope scope;
 
     //usamos um enumerado para guardar o tipo, porque é mais eficiente nas comparações de tipos
-    public Symbol(String type, String name)
-    {
-        this.type = PType.valueOf(type.toUpperCase(Locale.ROOT));
+    public Symbol(String type, String name) {
+        if (type.startsWith("<"))
+            this.type = PType.valueOf("POINTER");
+        else {
+            this.type = PType.valueOf(type.toUpperCase(Locale.ROOT));
+        }
         this.name = name;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return name + ":" + this.type;
     }
 }

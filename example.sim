@@ -1,14 +1,16 @@
 int x;
 float a;
-
+<int> b;
 int f(int x, float y, int x) {
     float z;
     float x;
     int y=1;
     int x = 2;
+    int a = 0;
     g();
     int i = 3;
     int k = 6;
+    int j,k,l,x;
     int k;
     int g = 4;
     return x + y;

@@ -2,34 +2,34 @@ lexer grammar ProjetoLexer;
 
 
 /* KEYWORDS */
-KEYWORD_INT : 'int' ;
-KEYWORD_BOOL : 'bool';
-KEYWORD_FLOAT : 'float';
-KEYWORD_STRING: 'string';
-KEYWORD_VOID: 'void';
-KEYWORD_SIZEOF: 'sizeof';
-KEYWORD_NULL: 'null';
-KEYWORD_ALG: 'alg';
-KEYWORD_TRUE: 'true';
-KEYWORD_FALSE: 'false';
-KEYWORD_WHILE: 'while';
-KEYWORD_DO: 'do';
-KEYWORD_FINALLY: 'finally';
-KEYWORD_LEAVE: 'leave';
-KEYWORD_RESTART: 'restart';
-KEYWORD_RETURN: 'return';
-KEYWORD_IF: 'if';
-KEYWORD_THEN : 'then';
-KEYWORD_ELSE: 'else';
-KEYWORD_WRITE: 'write';
-KEYWORD_WRITELN : 'writeln';
+INT : 'int' ;
+BOOL : 'bool';
+FLOAT : 'float';
+STRING: 'string';
+VOID: 'void';
+SIZEOF: 'sizeof';
+NULL: 'null';
+ALG: 'alg';
+TRUE: 'true';
+FALSE: 'false';
+WHILE: 'while';
+DO: 'do';
+FINALLY: 'finally';
+LEAVE: 'leave';
+RESTART: 'restart';
+RETURN: 'return';
+IF: 'if';
+THEN : 'then';
+ELSE: 'else';
+WRITE: 'write';
+WRITELN : 'writeln';
 
 
 
 /* TYPE */
 
 
-////POINTER : '<' (KEYWORD_INT | KEYWORD_BOOL | KEYWORD_FLOAT | KEYWORD_STRING) '>';
+POINTER : '<' (INT | BOOL | FLOAT | STRING) '>';
 
 
 
@@ -105,6 +105,6 @@ START_STRING : '\'' -> more,pushMode(STRING_MODE);
 
 mode STRING_MODE;
 
-STRING : ~('\'' | '\u0000' | '~')*(('~'~('\u0000')STRING)|('\'')) -> popMode;
+STRING_ : ~('\'' | '\u0000' | '~')*(('~'~('\u0000')STRING_)|('\'')) -> popMode;
 
 

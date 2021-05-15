@@ -78,5 +78,14 @@ public class TypeChecker extends ProjetoBaseListener {
         }
     }
 
-    
+
+    public void exitVar_declaration_simple(Projeto.Var_declaration_simpleContext ctx) {
+        for (int i = 0; i < ctx.IDENTIFIER().size(); i++) {
+            defineSymbol(ctx, new Symbol(ctx.type().start.getText(), ctx.IDENTIFIER().get(i).getText()));
+        }
+    }
+
+    public void exitVar_declaration_init(Projeto.Var_declaration_initContext ctx) {
+        defineSymbol(ctx, new Symbol(ctx.type().start.getText(), ctx.IDENTIFIER().getText()));
+    }
 }
