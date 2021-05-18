@@ -10,7 +10,14 @@ public class Symbol {
         FLOAT,
         VOID,
         ERROR,
-        POINTER,
+        INT_POINTER,
+        FLOAT_POINTER,
+        STRING_POINTER,
+        BOOL_POINTER,
+        STRING,
+        NULL,
+        VOID_POINTER,
+        BOOLEAN
     }
 
     public PType type;
@@ -19,15 +26,54 @@ public class Symbol {
 
     //usamos um enumerado para guardar o tipo, porque é mais eficiente nas comparações de tipos
     public Symbol(String type, String name) {
-        if (type.startsWith("<"))
-            this.type = PType.valueOf("POINTER");
+        if (type.equals("<int>"))
+            this.type = PType.INT_POINTER;
+        else if (type.equals("<float>"))
+            this.type = PType.FLOAT_POINTER;
+        else if (type.equals("<string>"))
+            this.type = PType.STRING_POINTER;
+        else if (type.equals("<bool>"))
+            this.type = PType.BOOL_POINTER;
         else {
             this.type = PType.valueOf(type.toUpperCase(Locale.ROOT));
         }
         this.name = name;
     }
-
     public String toString() {
-        return name + ":" + this.type;
+        return name + ":" + this.type                 ;
     }
+
+
+    public static boolean areBothTypesEqual(Symbol.PType type1, Symbol.PType type2)
+    {
+        return type1 == type2;
+    }
+
+
+    public static boolean isAPointer(Symbol.PType type)
+    {
+        return isAPrimitivePointer(type) || type == PType.VOID_POINTER;
+    }
+
+    public static boolean isAPrimitivePointer(Symbol.PType type)
+    {
+        return type == PType.BOOL_POINTER || type == PType.FLOAT_POINTER || type == PType.INT_POINTER
+                || type == PType.STRING_POINTER;
+    }
+
+
+    public static boolean isNumeric(Symbol.PType type)
+    {
+        return type == PType.FLOAT || type == PType.INT;
+    }
+
+
+    public static boolean isPrimitive(Symbol.PType e1)
+    {
+        return e1 == Symbol.PType.FLOAT ||
+                e1 == Symbol.PType.BOOLEAN ||
+                e1 == Symbol.PType.STRING ||
+                e1 == Symbol.PType.INT;
+    }
+
 }

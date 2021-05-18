@@ -1,6 +1,14 @@
 lexer grammar ProjetoLexer;
 
 
+/* TYPE */
+
+BOOL_POINTER: '<' BOOL '>';
+INT_POINTER: '<' INT '>';
+FLOAT_POINTER: '<' FLOAT '>';
+STRING_POINTER: '<' STRING '>';
+
+
 /* KEYWORDS */
 INT : 'int' ;
 BOOL : 'bool';
@@ -26,10 +34,8 @@ WRITELN : 'writeln';
 
 
 
-/* TYPE */
 
 
-POINTER : '<' (INT | BOOL | FLOAT | STRING) '>';
 
 
 

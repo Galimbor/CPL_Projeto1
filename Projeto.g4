@@ -19,12 +19,21 @@ var_declaration:
     |   var_declaration_init SEMI_COLON;
 
 
+
+
+/*-------TYPE-------*/
+pointer: STRING_POINTER
+        |   INT_POINTER
+        |   FLOAT_POINTER
+        |   BOOL_POINTER;
+
+
 /*-------TYPE-------*/
 type :
             INT
          |  FLOAT
          |  STRING
-         |  POINTER;
+         |  pointer;
 
 function_type:
         type | VOID;
@@ -68,7 +77,7 @@ expression_evaluation:
     |   expression_evaluation LBRACKET expression_evaluation RBRACKET RBRACKET{notifyErrorListeners("Extraneous ']'");} # PointerExpErr2
     |   expression_evaluation LBRACKET expression_evaluation RBRACKET # PointerExp
     |   unary_operators expression_evaluation   # UnaryExp
-    |   expression_evaluation binary_op_MUL_DIV expression_evaluation   # MulDiv
+    |   expression_evaluation binary_op_MUL_DIV_REM expression_evaluation   # MulDivRem
     |   expression_evaluation binary_op_ADD_SUB expression_evaluation   # AddSub
     |   expression_evaluation comparators {notifyErrorListeners("Missing expression after comparator");}        # CompOtherErr1
     |   expression_evaluation comparators expression_evaluation         # CompOther
@@ -77,58 +86,19 @@ expression_evaluation:
     |   simple_expression                                               # SimpExp;
 
 
-//WITHOUT ANTLR
-exp_comp_or :
-        exp_comp_and exp_comp_or_linha;
-exp_comp_or_linha :
-        comparator_OR exp_comp_and exp_comp_or_linha
-    | ;
 
-exp_comp_and :
-        exp_comp exp_comp_and_linha;
-exp_comp_and_linha :
-        comparator_AND exp_comp exp_comp_and_linha
-    |;
+//exp_mul_div_rem :   exp_MUL     # Exp_mul
+//                    | exp_DIV   # Exp_div
+//                    | exp_REM   # Exp_rem;
+//
+//exp_MUL: expression_evaluation MUL expression_evaluation;
+//exp_DIV: expression_evaluation DIV expression_evaluation;
+//exp_REM: expression_evaluation PERCENT expression_evaluation;
 
-exp_comp :
-        exp_add_sub exp_comp_linha;
-exp_comp_linha :
-        comparators exp_add_sub exp_comp_linha
-    |;
-
-exp_add_sub :
-        exp_mul_div exp_add_sub_linha;
-exp_add_sub_linha :
-        binary_op_ADD_SUB exp_mul_div exp_add_sub_linha
-    |;
-
-exp_mul_div :
-        exp_unary_op exp_mul_div_linha;
-exp_mul_div_linha :
-        binary_op_MUL_DIV exp_unary_op exp_mul_div_linha
-    |;
-
-exp_unary_op :
-        (unary_operators exp_pointer_indx)
-    |   exp_pointer_indx;
-exp_unary_op_linha :
-        exp_pointer_indx exp_unary_op_linha
-    |;
-
-exp_pointer_indx:
-        exp_paren exp_pointer_indx_linha;
-exp_pointer_indx_linha:
-        LBRACKET exp_comp_or RBRACKET exp_pointer_indx_linha
-    |;
-
-exp_paren :
-        LPAREN exp_comp_or RPAREN
-    |   simple_expression;
-
-
-//expression_evaluation:
-//    exp_comp_or;
-
+binary_op_MUL_DIV_REM:
+    MUL     #Mul
+    | DIV   #Div
+    | PERCENT #Percent ;
 
 
 /*-------OPERATORS-------*/
@@ -144,18 +114,15 @@ binary_op_ADD_SUB:
     |   SUB         # Sub
     ;
 
-binary_op_MUL_DIV:
-        MUL         # Mul
-    |   DIV         # Div
-    ;
+
 
 comparators:
-        LESSER
-    |   GREATER
-    |   GREATEQ
-    |   LESSEQ
-    |   EQUALS
-    |   NOTEQUALS;
+        LESSER #Lesser
+    |   GREATER #Greater
+    |   GREATEQ #Greateq
+    |   LESSEQ #Lesseq
+    |   EQUALS #Equals
+    |   NOTEQUALS #Notequals;
 
 comparator_AND:
         AND;
