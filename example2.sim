@@ -1,0 +1,4 @@
+int x;
+float a;
+<int> b;
+<float> c;

@@ -1,7 +1,21 @@
 int x;
 float a;
 <int> b;
-int f(int x, float y, int x) {
+<float> c;
+
+
+int g(int ricardo) {
+int blabla;
+return ricardo;
+}
+
+
+int f(int x, float y, int x)
+@{
+int a;
+a=1;
+}
+{
     float z;
     float x;
     int y=1;
@@ -12,16 +26,12 @@ int f(int x, float y, int x) {
     int k = 6;
     int j,k,l,x;
     int k;
-    int g = 4;
     return x + y;
 }
 
-void g() {
-    int x = 0;
-    float y;
-    y = 9;
-    f();
-    z();
-    y();
-    x = f;
+int alg(int n, <string> args) {
+int a=1;
+a= a+1;
 }
+
+

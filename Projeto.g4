@@ -10,7 +10,7 @@ program :
 declaration:
         var_declaration SEMI_COLON  {notifyErrorListeners("Extraneous ';' after declaration");}
     |   var_declaration
-    |   function;
+    |   function_decl;
 
 
 /*-------VARIABLE DECLARATION-------*/
@@ -20,11 +20,16 @@ var_declaration:
 
 
 /*-------TYPE-------*/
+pointer: STRING_POINTER
+        |   INT_POINTER
+        |   FLOAT_POINTER
+        |   BOOL_POINTER;
+
 type :
             INT
          |  FLOAT
          |  STRING
-         |  POINTER;
+         |  pointer;
 
 function_type:
         type | VOID;
@@ -168,28 +173,41 @@ comparator_OR:
 
 
 /*-------FUNCTION DECLARATION-------*/
-function :
+function_decl :
         IDENTIFIER LPAREN function_args* RPAREN body {notifyErrorListeners("Missing type of function");}
-    |   function_type IDENTIFIER LPAREN function_args* RPAREN body;
+    |   function_normal
+    |   special_function;
+
+
+function_normal:
+         function_type IDENTIFIER LPAREN function_args* RPAREN body;
+
+special_function:
+        INT ALG LPAREN INT N COMMA STRING_POINTER ARGS RPAREN body;
 
 function_args_old:
         function_arg
     |   function_arg COMMA function_args_old; //Without left factoring
 
-function_args:
-        function_arg function_args_aux;
+//function_args:
+//        function_arg function_args_aux;
 
-function_args_aux:
-        COMMA function_args
-    |   ;
+function_args:
+        function_arg (COMMA function_arg)*;
 
 function_arg :
         type IDENTIFIER;
 
+//function_args_aux:
+//        COMMA function_args
+//    |   ;
+
+
+
 
 
 /*-------BODY-------*/
-body :
+body:
         prologue? central epilogue?;
 
 prologue: AT block;
@@ -197,9 +215,9 @@ central: block;
 epilogue: EXTRACT block;
 
 block :
-        LBLOCK (var_declaration*  instruction+)*  {notifyErrorListeners("Missing '}' to match '{'");}
-    |   LBLOCK (var_declaration*  instruction+)* RBLOCK RBLOCK {notifyErrorListeners("Extraneous '}'");}
-    |   LBLOCK (var_declaration* instruction+)* RBLOCK;
+        LBLOCK (var_declaration*  instruction+)+  {notifyErrorListeners("Missing '}' to match '{'");}
+    |   LBLOCK (var_declaration*  instruction+)+ RBLOCK RBLOCK {notifyErrorListeners("Extraneous '}'");}
+    |   LBLOCK (var_declaration* instruction+)+ RBLOCK;
 
 
 /*---FUNCTION INVOCATION---*/

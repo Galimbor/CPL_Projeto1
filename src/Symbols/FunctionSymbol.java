@@ -10,7 +10,8 @@ public class FunctionSymbol extends Symbol {
     public FunctionSymbol(String type, String functionName)
     {
         super(type,functionName);
-        this.arguments = new ArrayList<Symbol>();
+
+        this.arguments = new ArrayList<>();
     }
 
     public String toString()

@@ -23,14 +23,17 @@ THEN : 'then';
 ELSE: 'else';
 WRITE: 'write';
 WRITELN : 'writeln';
+N: 'n';
+ARGS: 'args';
 
 
 
 /* TYPE */
 
-
-POINTER : '<' (INT | BOOL | FLOAT | STRING) '>';
-
+INT_POINTER: '<' INT '>';
+FLOAT_POINTER: '<' FLOAT '>';
+STRING_POINTER: '<' STRING '>';
+BOOL_POINTER: '<' BOOL '>';
 
 
 
