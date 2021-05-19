@@ -180,7 +180,7 @@ function_decl :
 
 
 function_normal:
-         function_type IDENTIFIER LPAREN function_args* RPAREN body;
+         function_type IDENTIFIER LPAREN function_args? RPAREN body;
 
 special_function:
         INT ALG LPAREN INT N COMMA STRING_POINTER ARGS RPAREN body;
@@ -217,7 +217,7 @@ epilogue: EXTRACT block;
 block :
         LBLOCK (var_declaration*  instruction+)+  {notifyErrorListeners("Missing '}' to match '{'");}
     |   LBLOCK (var_declaration*  instruction+)+ RBLOCK RBLOCK {notifyErrorListeners("Extraneous '}'");}
-    |   LBLOCK (var_declaration* instruction+)+ RBLOCK;
+    |   LBLOCK (var_declaration | instruction)* RBLOCK;
 
 
 /*---FUNCTION INVOCATION---*/
@@ -228,13 +228,16 @@ function_invocation :
 id_invocation :
         IDENTIFIER LPAREN list_expressions? RPAREN;
 
-list_expressions_old : expression | expression COMMA list_expressions_old; //without left factoring
 
-list_expressions :
-        expression list_expressions_aux;
-list_expressions_aux:
-        COMMA list_expressions
-    |   ;
+list_expressions: expression (COMMA expression)*;
+
+//list_expressions_old : expression | expression COMMA list_expressions_old; //without left factoring
+//
+//list_expressions :
+//        expression list_expressions_aux;
+//list_expressions_aux:
+//        COMMA list_expressions
+//    |   ;
 
 special_invocation:
         at_function
@@ -256,8 +259,7 @@ writeln_fuction :
 
 /*-------INSTRUCTIONS-------*/
 instruction :
-        expression {notifyErrorListeners("Missing ';'");}   # Expression_insErr1
-    |   expression SEMI_COLON               # Expression_ins
+    expression SEMI_COLON               # Expression_ins
     |   control_instructions SEMI_COLON     # Control_ins
     |   attribution_instruction SEMI_COLON  # Attribution_ins
     |   conditional_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");} # Conditional_insErr1

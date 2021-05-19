@@ -24,11 +24,9 @@ public class Main {
             // create listener then feed to walker
             System.out.println("Type checking...");
             TypeChecker listener = new TypeChecker();
-            RefChecker listener2 = new RefChecker(listener.scopes);
+            RefChecker listener2 = new RefChecker(listener.scopes, listener.exprType, listener.functions);
             walker.walk(listener, tree);
             walker.walk(listener2,tree);
-
-
             if (listener.semanticErrors > 0)
                 System.err.println("There was " + listener.semanticErrors + " semantic errors");
                 System.exit(1);

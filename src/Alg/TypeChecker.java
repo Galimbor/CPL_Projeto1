@@ -6,6 +6,7 @@ import Symbols.Symbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
+
 public class TypeChecker extends ProjetoBaseListener {
     public Scope globalScope;
     public Scope currentScope;
@@ -13,15 +14,17 @@ public class TypeChecker extends ProjetoBaseListener {
     public int semanticErrors;
     public boolean haveAlg;
 
-    ParseTreeProperty<Symbol.PType> exprType = new ParseTreeProperty<>();
+    public ParseTreeProperty<Symbol.PType> exprType = new ParseTreeProperty<>();
 
     public ParseTreeProperty<Scope> scopes = new ParseTreeProperty<>();
+    public ParseTreeProperty<FunctionSymbol> functions = new ParseTreeProperty<>();
+
 
     //métodos auxiliar (é usado em 2 regras gramaticais)
     private boolean defineSymbol(ParserRuleContext ctx, Symbol s) {
 
-        //TODO: Em vez de ir buscar o scope através da variável currentScope, devo usar o atributo scopes
-//
+//        TODO: Em vez de ir buscar o scope através da variável currentScope, devo usar o atributo scopes
+
 //        if (!this.scopes.get(ctx).define(s)) {
 //            System.err.println("Redefining previously defined variable " + s.name + " in line " + ctx.start.getLine());
 //            this.semanticErrors++;
@@ -51,7 +54,41 @@ public class TypeChecker extends ProjetoBaseListener {
         if (!haveAlg)   //alg function not declared
             System.err.println("Must declare alg(int n, <string> args) function");
         System.out.println(this.currentScope.toString());
-        System.out.println(scopes.get(ctx));
+    }
+
+
+    public void exitExpression(Projeto.ExpressionContext ctx) {
+        exprType.put(ctx,exprType.get(ctx.expression_evaluation()));
+    }
+
+    public void exitSimpExp(Projeto.SimpExpContext ctx) {
+        exprType.put(ctx,exprType.get(ctx.simple_expression()));
+    }
+
+
+    //expr --> ID;
+    public void exitVar(Projeto.VarContext ctx)
+    {
+        String variableName = ctx.IDENTIFIER().getText();
+        Symbol s = this.currentScope.resolve(variableName);
+        if(s == null)
+        {
+            System.err.println("Undefined variable " + variableName + " in line " + ctx.IDENTIFIER().getSymbol().getLine() + " position " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
+            this.semanticErrors++;
+            //this.validated = false;
+            exprType.put(ctx,Symbol.PType.ERROR);
+            return;
+        }
+
+        if(s instanceof FunctionSymbol)
+        {
+            System.err.println("Using function symbol " + variableName + " as variable in line " + ctx.IDENTIFIER().getSymbol().getLine());
+            this.semanticErrors++;
+            //this.validated = false;
+            exprType.put(ctx,Symbol.PType.ERROR);
+            return;
+        }
+        exprType.put(ctx,s.type);
     }
 
     //function_arg : type IDENTIFIER;
@@ -102,9 +139,16 @@ public class TypeChecker extends ProjetoBaseListener {
         }
     }
 
+    //id_invocation : IDENTIFIER LPAREN list_expressions? RPAREN;
+    public void enterId_invocation(Projeto.Id_invocationContext ctx) {
+        String functionName = ctx.IDENTIFIER().getText();
+        scopes.put(ctx, currentScope);
+    }
+
     // function_normal: function_type IDENTIFIER LPAREN function_args* RPAREN body;
     public void exitFunction_normal(Projeto.Function_normalContext ctx) {
         System.out.println("Local scope for function " + this.currentFunction.name + ": " + this.currentScope.toString());
+        this.functions.put(ctx.IDENTIFIER(), this.currentFunction);
         this.currentFunction = null;
         currentScope = currentScope.getParentScope();
     }
@@ -162,12 +206,6 @@ public class TypeChecker extends ProjetoBaseListener {
             return;
         }
         exprType.put(ctx, s.type);
-    }
-
-
-    //id_invocation : IDENTIFIER LPAREN list_expressions? RPAREN;
-    public void enterId_invocation(Projeto.Id_invocationContext ctx) {
-        scopes.put(ctx,currentScope);
     }
 
 

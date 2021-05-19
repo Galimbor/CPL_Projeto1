@@ -8,6 +8,7 @@ public class Symbol {
     public enum PType {
         INT,
         FLOAT,
+        STRING,
         VOID,
         ERROR,
         INT_POINTER,

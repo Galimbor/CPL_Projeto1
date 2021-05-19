@@ -6,25 +6,24 @@ float a;
 
 int g(int ricardo) {
 int blabla;
-return ricardo;
+return blabla;
 }
 
 
-int f(int x, float y, int x)
-@{
-int a;
-a=1;
-}
+int f(int x, float y)
 {
+    int artur;
+    float ricardo;
+    string jean;
+    x = funcao(artur,ricardo,jean);
+    funcao(artur, ricardo, jean);
     float z;
-    float x;
     int y=1;
-    int x = 2;
     int a = 0;
-    g();
+    int g =1;
     int i = 3;
     int k = 6;
-    int j,k,l,x;
+    int j,k,l;
     int k;
     return x + y;
 }
@@ -32,6 +31,18 @@ a=1;
 int alg(int n, <string> args) {
 int a=1;
 a= a+1;
+}
+
+
+int funcao(int artur, float ricardo, string jean) {
+int a;
+a=1;
+}
+
+int testeJean(int artur) @{
+i=1;}{
+int a;
+a=1;
 }
 
 
