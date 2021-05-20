@@ -37,10 +37,22 @@ public class RefChecker extends ProjetoBaseListener {
         } else {
             FunctionSymbol fs = (FunctionSymbol) s;
             if (fs.arguments.size() == ctx.list_expressions().expression().size()) {
-//                String errorMessage = "Cannot resolve function " + fs.name + "(";
                 for (int i = 0; i < ctx.list_expressions().expression().size(); i++) {
-//                    errorMessage = errorMessage.concat(fs.arguments.get(i).name);
-                    if (!this.exprType.get(ctx.list_expressions().expression().get(i)).equals(fs.arguments.get(i).type)) {
+                    Symbol.PType calledArg = this.exprType.get(ctx.list_expressions().expression().get(i));
+                    Symbol.PType declaredArg = fs.arguments.get(i).type;
+//                    System.out.println("declared: " + declaredArg);
+//                    System.out.println("called: " + calledArg);
+                    if (calledArg.equals(Symbol.PType.FLOAT) && declaredArg.equals(Symbol.PType.INT))
+                        continue;
+                    else if (calledArg.equals(Symbol.PType.NULL) && declaredArg.equals(Symbol.PType.BOOL_POINTER))
+                        continue;
+                    else if (calledArg.equals(Symbol.PType.NULL) && declaredArg.equals(Symbol.PType.STRING_POINTER))
+                        continue;
+                    else if (calledArg.equals(Symbol.PType.NULL) && declaredArg.equals(Symbol.PType.FLOAT_POINTER))
+                        continue;
+                    else if (calledArg.equals(Symbol.PType.NULL) && declaredArg.equals(Symbol.PType.INT_POINTER))
+                        continue;
+                    if (!calledArg.equals(declaredArg)) {
                         System.err.println("Arguments of function " + functionName + " do not match the arguments " +
                                 "declared in the function declaration");
                         return;

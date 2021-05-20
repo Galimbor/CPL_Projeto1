@@ -10,6 +10,7 @@ public class Symbol {
         FLOAT,
         STRING,
         VOID,
+        NULL,
         ERROR,
         INT_POINTER,
         FLOAT_POINTER,

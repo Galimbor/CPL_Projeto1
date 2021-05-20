@@ -12,11 +12,10 @@ return blabla;
 
 int f(int x, float y)
 {
-    int artur;
-    float ricardo;
-    string jean;
-    x = funcao(artur,ricardo,jean);
-    funcao(artur, ricardo, jean);
+    int a;
+    int b;
+    <int> c = null;
+    funcao(a, b, c);
     float z;
     int y=1;
     int a = 0;
@@ -34,7 +33,7 @@ a= a+1;
 }
 
 
-int funcao(int artur, float ricardo, string jean) {
+int funcao(int artur, int ricardo, <string> jean) {
 int a;
 a=1;
 }
