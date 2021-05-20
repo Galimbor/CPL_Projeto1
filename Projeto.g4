@@ -25,7 +25,16 @@ type :
          |  FLOAT
          |  STRING
          |  BOOL
-         |  POINTER;
+         |  pointer;
+
+
+pointer:
+            STRING_POINTER
+        |   INT_POINTER
+        |   FLOAT_POINTER
+        |   BOOL_POINTER
+        |   NULL_POINTER
+        ;
 
 function_type:
         type | VOID;
@@ -164,7 +173,9 @@ block :
     |   LBLOCK var_or_instruction* RBLOCK;
 
 
-var_or_instruction: var_declaration | instruction;
+var_or_instruction: var_declaration
+                    | instruction
+                    ;
 
 /*---FUNCTION INVOCATION---*/
 function_invocation :
@@ -177,7 +188,8 @@ id_invocation :
 list_expressions_old : expression | expression COMMA list_expressions_old; //without left factoring
 
 list_expressions :
-        expression list_expressions_aux;
+        expression (COMMA expression)*;
+
 list_expressions_aux:
         COMMA list_expressions
     |   ;
@@ -202,15 +214,15 @@ writeln_fuction :
 
 /*-------INSTRUCTIONS-------*/
 instruction :
-    expression SEMI_COLON               # Expression_ins
-    |   control_instructions SEMI_COLON     # Control_ins
-    |   attribution_instruction SEMI_COLON  # Attribution_ins
-    |   conditional_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");} # Conditional_insErr1
-    |   conditional_instruction             # Conditional_ins
-    |   cicle_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");}    # Cicle_insErr1
-    |   cicle_instruction                   # Cicle_ins
-    |   subblock_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");} # Subblock_insErr1
-    |   subblock_instruction                # Subblock_ins
+    expression SEMI_COLON
+    |   control_instructions SEMI_COLON
+    |   attribution_instruction SEMI_COLON
+    |   conditional_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");}
+    |   conditional_instruction
+    |   cicle_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");}
+    |   cicle_instruction
+    |   subblock_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");}
+    |   subblock_instruction
     ;
 
 

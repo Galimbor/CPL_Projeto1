@@ -1,9 +1,15 @@
-int x;
-float a;
-<int> b;
-<float> c;
+int f(int j, int i) {
+return 1;
+int a;
+return 1;
+}
 
 
 int alg(int n, <string> args) {
+return 1;
+}
 
+
+void g() {
+return;
 }

@@ -23,6 +23,8 @@ THEN : 'then';
 ELSE: 'else';
 WRITE: 'write';
 WRITELN : 'writeln';
+N: 'n';
+ARGS: 'args';
 
 
 
@@ -32,6 +34,7 @@ INT_POINTER: '<' INT '>';
 FLOAT_POINTER: '<' FLOAT '>';
 STRING_POINTER: '<' STRING '>';
 BOOL_POINTER: '<' BOOL '>';
+NULL_POINTER: '<' VOID '>';
 
 
 

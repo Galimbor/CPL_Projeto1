@@ -14,22 +14,18 @@ int f(int x, float y)
 {
     int a;
     int b;
-    <int> c = null;
+    <void> c = null;
     funcao(a, b, c);
     float z;
-    int y=1;
-    int a = 0;
     int g =1;
     int i = 3;
     int k = 6;
-    int j,k,l;
-    int k;
-    return x + y;
+    int j,l;
+    return x;
 }
 
 int alg(int n, <string> args) {
-int a=1;
-a= a+1;
+return 1;
 }
 
 
@@ -38,10 +34,7 @@ int a;
 a=1;
 }
 
-int testeJean(int artur) @{
-i=1;}{
+int testeJean(int artur) {
 int a;
 a=1;
 }
-
-

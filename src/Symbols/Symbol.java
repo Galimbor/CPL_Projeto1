@@ -14,9 +14,9 @@ public class Symbol {
         FLOAT_POINTER,
         STRING_POINTER,
         BOOL_POINTER,
+        NULL_POINTER,
         STRING,
         NULL,
-        VOID_POINTER,
         BOOLEAN
     }
 
@@ -34,6 +34,8 @@ public class Symbol {
             this.type = PType.STRING_POINTER;
         else if (type.equals("<bool>"))
             this.type = PType.BOOL_POINTER;
+        else if (type.equals("<void>"))
+            this.type = PType.NULL_POINTER;
         else {
             this.type = PType.valueOf(type.toUpperCase(Locale.ROOT));
         }
@@ -52,7 +54,7 @@ public class Symbol {
 
     public static boolean isAPointer(Symbol.PType type)
     {
-        return isAPrimitivePointer(type) || type == PType.VOID_POINTER;
+        return isAPrimitivePointer(type) || type == PType.NULL_POINTER;
     }
 
     public static boolean isAPrimitivePointer(Symbol.PType type)
