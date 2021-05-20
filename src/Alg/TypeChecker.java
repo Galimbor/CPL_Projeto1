@@ -5,6 +5,7 @@ import Symbols.Operator;
 import Symbols.Scope;
 import Symbols.Symbol;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
 public class TypeChecker extends ProjetoBaseListener {
@@ -16,6 +17,7 @@ public class TypeChecker extends ProjetoBaseListener {
     public Scope currentScope;
     private FunctionSymbol currentFunction;
     public boolean validated;
+    private boolean hasResult;
 
     ParseTreeProperty<Symbol.PType> exprType = new ParseTreeProperty<>();
     ParseTreeProperty<Operator.PType> opType = new ParseTreeProperty<>();
@@ -46,7 +48,7 @@ public class TypeChecker extends ProjetoBaseListener {
         System.out.println(this.currentScope.toString());
     }
 
-
+//function : function_type IDENTIFIER LPAREN function_args? RPAREN body;
     public void enterFunction(Projeto.FunctionContext ctx) {
         FunctionSymbol f;
         String functionName = ctx.IDENTIFIER().getText();
@@ -59,15 +61,219 @@ public class TypeChecker extends ProjetoBaseListener {
     }
 
     //this method is called after the block ends
-    //functionDecl : type ID '(' formalParameters? ')' block;
+    //function : function_type IDENTIFIER LPAREN function_args? RPAREN body;
     public void exitFunction(Projeto.FunctionContext ctx) {
+
+
+
+
         //imprimir o enquadramento local, só para efeito de debug
         System.out.println("Local scope for function " + this.currentFunction.name + ": " + this.currentScope.toString());
         this.currentFunction = null;
-
+        int counter = 2; // Beginning and then central block..
+        if(ctx.body().epilogue() != null) counter++;
+        if(ctx.body().prologue() != null) counter++;
         //temos de sair do contexto local da função
-        currentScope = currentScope.getParentScope();
+        for (int i = 0; i < counter; i++) {
+            currentScope = currentScope.getParentScope();
+        }
+
+
+
+
+        this.hasResult = false;
     }
+
+//    control_instructions : RETURN expression?
+    public void exitReturn(Projeto.ReturnContext ctx)
+    {
+        if(!this.hasResult) this.hasResult = true;
+        Symbol.PType expr = exprType.get(ctx.expression());
+       if(this.currentFunction != null)
+       {
+           //TODO - Tratar das conversoes implicitas
+           if(this.currentFunction.type == Symbol.PType.VOID)
+           {
+               if(ctx.expression() != null){
+                   this.validated = false;
+                   System.err.println("Function type is void but the return is of type " + expr);
+               }
+           }
+           else if(this.currentFunction.type != expr)
+           {
+               this.validated = false;
+               System.err.println("Function is of type " + this.currentFunction.type + " and the return type is " + expr);
+           }
+       }
+    }
+    public void exitCentral(Projeto.CentralContext ctx)
+    {
+        if(this.currentFunction.type != Symbol.PType.VOID)
+        {
+            if(  !this.hasResult)
+            {
+                this.validated = false;
+                System.err.println("The central block needs to have one return.");
+            }
+            int numberOfInsOrVar = ctx.block().var_or_instruction().size();
+
+            Projeto.InstructionContext lastInsOrVar = ctx.block().var_or_instruction(numberOfInsOrVar - 1).instruction();
+            if(lastInsOrVar != null) {
+                if (!lastInsOrVar.getStart().getText().equals("return"))
+                {
+                    this.validated = false;
+                    System.err.println("The return needs to be the last instruction in the central block.");
+                }
+            }
+            else{
+                this.validated = false;
+                System.err.println("The return needs to be the last instruction in the central block.");
+            }
+        }
+        else
+        {
+            if(this.hasResult){
+                int numberOfInsOrVar = ctx.block().var_or_instruction().size();
+
+                Projeto.InstructionContext lastInsOrVar = ctx.block().var_or_instruction(numberOfInsOrVar - 1).instruction();
+                if(lastInsOrVar != null) {
+                    if (!lastInsOrVar.getStart().getText().equals("return"))
+                    {
+                        this.validated = false;
+                        System.err.println("The return needs to be the last instruction in the central block.");
+                    }
+                }
+                else{
+                    this.validated = false;
+                    System.err.println("The return needs to be the last instruction in the central block.");
+                }
+            }
+        }
+    }
+
+    public void exitPrologue(Projeto.PrologueContext ctx)
+    {
+        if(this.currentFunction.type != Symbol.PType.VOID)
+        {
+            int numberOfInsOrVar = ctx.block().var_or_instruction().size();
+
+            Projeto.InstructionContext lastInsOrVar = ctx.block().var_or_instruction(numberOfInsOrVar - 1).instruction();
+            if(lastInsOrVar != null) {
+                if (!lastInsOrVar.getStart().getText().equals("return"))
+                {
+                    this.validated = false;
+                    System.err.println("The return needs to be the last instruction in the prologue block.");
+                }
+            }
+            else{
+                this.validated = false;
+                System.err.println("The return needs to be the last instruction in the prologue block.");
+            }
+        }
+        else
+        {
+            if(this.hasResult){
+                int numberOfInsOrVar = ctx.block().var_or_instruction().size();
+
+                Projeto.InstructionContext lastInsOrVar = ctx.block().var_or_instruction(numberOfInsOrVar - 1).instruction();
+                if(lastInsOrVar != null) {
+                    if (!lastInsOrVar.getStart().getText().equals("return"))
+                    {
+                        this.validated = false;
+                        System.err.println("The return needs to be the last instruction in the prologue block.");
+                    }
+                }
+                else{
+                    this.validated = false;
+                    System.err.println("The return needs to be the last instruction in the prologue block.");
+                }
+            }
+        }
+    }
+
+    public void exitEpilogue(Projeto.EpilogueContext ctx)
+    {
+        if(this.currentFunction.type != Symbol.PType.VOID)
+        {
+
+            int numberOfInsOrVar = ctx.block().var_or_instruction().size();
+
+            Projeto.InstructionContext lastInsOrVar = ctx.block().var_or_instruction(numberOfInsOrVar - 1).instruction();
+            if(lastInsOrVar != null) {
+                if (!lastInsOrVar.getStart().getText().equals("return"))
+                {
+                    this.validated = false;
+                    System.err.println("The return needs to be the last instruction in the epilogue block.");
+                }
+            }
+            else{
+                this.validated = false;
+                System.err.println("The return needs to be the last instruction in the epilogue block.");
+            }
+        }
+        else
+        {
+            if(this.hasResult){
+                int numberOfInsOrVar = ctx.block().var_or_instruction().size();
+
+                Projeto.InstructionContext lastInsOrVar = ctx.block().var_or_instruction(numberOfInsOrVar - 1).instruction();
+                if(lastInsOrVar != null) {
+                    if (!lastInsOrVar.getStart().getText().equals("return"))
+                    {
+                        this.validated = false;
+                        System.err.println("The return needs to be the last instruction in the epilogue block.");
+                    }
+                }
+                else{
+                    this.validated = false;
+                    System.err.println("The return needs to be the last instruction in the epilogue block.");
+                }
+            }
+        }
+    }
+
+    public void exitSubblock_instruction(Projeto.Subblock_instructionContext ctx)
+    {
+        if(this.currentFunction.type != Symbol.PType.VOID)
+        {
+
+            int numberOfInsOrVar = ctx.instruction().size() - 1;
+
+            Projeto.InstructionContext lastIns = ctx.instruction(numberOfInsOrVar);
+            if(lastIns != null) {
+                if (!lastIns.getStart().getText().equals("return"))
+                {
+                    this.validated = false;
+                    System.err.println("The return needs to be the last instruction in the sub block.");
+                }
+            }
+            else{
+                this.validated = false;
+                System.err.println("The return needs to be the last instruction in the sub block.");
+            }
+        }
+        else
+        {
+            if(this.hasResult){
+                int numberOfInsOrVar = ctx.instruction().size() - 1;
+
+                Projeto.InstructionContext lastIns = ctx.instruction(numberOfInsOrVar);
+                if(lastIns != null) {
+                    if (!lastIns.getStart().getText().equals("return"))
+                    {
+                        this.validated = false;
+                        System.err.println("The return needs to be the last instruction in the sub block.");
+                    }
+                }
+                else{
+                    this.validated = false;
+                    System.err.println("The return needs to be the last instruction in the sub block.");
+                }
+            }
+        }
+    }
+
+
 
     //function_arg: function_arg IDENTIFIER
     public void exitFunction_arg(Projeto.Function_argContext ctx) {
@@ -89,23 +295,73 @@ public class TypeChecker extends ProjetoBaseListener {
         }
     }
 
-//    type IDENTIFIER EQUAL expression
-//    |   type IDENTIFIER EQUAL (LBRACKET expression RBRACKET | NULL)
-    public void exitVar_declaration_init(Projeto.Var_declaration_initContext ctx) {
 
-        String type = ctx.type().start.getText();
-        if(!isAValidPointerType(type))
+
+//var_declaration_init : type IDENTIFIER EQUAL expression
+    public void exitDeclAndAtrib(Projeto.DeclAndAtribContext ctx)
+    {
+        String stype = ctx.type().start.getText();
+        String name = ctx.IDENTIFIER().getText();
+        //TODO - Catch an exception and return appropriate erro if the type doesn't exist
+        Symbol type = new Symbol(stype, name);
+
+        Symbol.PType expression = exprType.get(ctx.expression());
+
+        if(type.type == expression)
         {
-            //TODO - adicionar na exprType table quando a implementarmos
+//        TODO - what should I do here..
+            System.out.println("The variable " + name + " is declared properly." );
+        }
+        else
+        {
+            System.err.println("Invalid variable type  " + stype + " of variable " + name + " on line " + ctx.start.getLine()
+            + " since the right side value is of type " + expression);
             this.validated = false;
         }
-//        TODO - VERIFICAR SE A EXPRESSAO E INTEIRA
-
 
         defineSymbol(ctx, new Symbol(ctx.type().start.getText(), ctx.IDENTIFIER().getText()));
     }
 
 
+    public void exitExpression(Projeto.ExpressionContext ctx)
+    {
+        Symbol.PType type = exprType.get(ctx.expression_evaluation());
+        exprType.put(ctx,type);
+    }
+
+
+    //var_declaration_init : type IDENTIFIER EQUAL (LBRACKET expression RBRACKET | NULL)
+    public void exitMemDecl(Projeto.MemDeclContext ctx)
+    {
+        String stype = ctx.type().start.getText();
+        String name = ctx.IDENTIFIER().getText();
+        //TODO - Catch an exception and return appropriate erro if the type doesn't exist
+        Symbol type = new Symbol(stype, name);
+
+
+
+        if(Symbol.isAPrimitivePointer(type.type))
+        {
+            Symbol.PType expression = exprType.get(ctx.expression());
+            if(expression == Symbol.PType.INT)
+            {
+                System.out.println("The variable " + name + " is declared properly." );
+            }
+            else
+            {
+                System.err.println("Expression should be of type int but is of type" + expression + " on line " + ctx.start.getLine());
+                this.validated = false;
+            }
+
+        }
+        else
+        {
+            System.err.println("Invalid variable type  " + stype + " of variable " + name + " on line " + ctx.start.getLine());
+            this.validated = false;
+        }
+
+        defineSymbol(ctx, new Symbol(ctx.type().start.getText(), ctx.IDENTIFIER().getText()));
+    }
 
 
 
@@ -259,7 +515,7 @@ public class TypeChecker extends ProjetoBaseListener {
 
         }
         else{
-            System.out.println(e1 + " " + e2);
+//            System.err.println(e1 + " " + e2);
             System.err.println("Something is wrong on line " + ctx.start.getLine());
             this.validated = false;
             exprType.put(ctx, Symbol.PType.ERROR);
@@ -329,6 +585,7 @@ public class TypeChecker extends ProjetoBaseListener {
 
     public void exitNotequals(Projeto.NotequalsContext ctx){opType.put(ctx,Operator.PType.NOTEQUALS);}
 
+    // expression : IDENTIFIER
     public void exitVar(Projeto.VarContext ctx){
         String variableName = ctx.IDENTIFIER().getText();
         Symbol s = this.currentScope.resolve(variableName);
@@ -351,7 +608,7 @@ public class TypeChecker extends ProjetoBaseListener {
         exprType.put(ctx, s.type);
     }
 
-
+//     expression_evaluation:  expression_evaluation comparator_OTHER expression_evaluation
     public void exitCompOther(Projeto.CompOtherContext ctx){
         Symbol.PType e1 = exprType.get(ctx.expression_evaluation(0));
         Symbol.PType e2 = exprType.get(ctx.expression_evaluation(1));
@@ -408,6 +665,9 @@ public class TypeChecker extends ProjetoBaseListener {
 
     }
 
+
+
+//     expression_evaluation:  expression_evaluation comparator_AND expression_evaluation
     public void exitCompAnd(Projeto.CompAndContext ctx)
     {
         Symbol.PType e1 = exprType.get(ctx.expression_evaluation(0));
@@ -426,6 +686,8 @@ public class TypeChecker extends ProjetoBaseListener {
 
     }
 
+
+//     expression_evaluation:  expression_evaluation comparator_OR expression_evaluation
     public void exitCompOr(Projeto.CompOrContext ctx)
     {
         Symbol.PType e1 = exprType.get(ctx.expression_evaluation(0));
@@ -445,36 +707,29 @@ public class TypeChecker extends ProjetoBaseListener {
     }
 
 
+    public void enterPrologue(Projeto.PrologueContext ctx)
+    {
+        this.currentScope = new Scope(currentScope);
+    }
+
+
+
+
+    public void enterEpilogue(Projeto.EpilogueContext ctx)
+    {
+        this.currentScope = new Scope(currentScope);
+    }
+
+
+    public void enterCentral(Projeto.CentralContext ctx)
+    {
+        this.currentScope = new Scope(currentScope);
+    }
+
 
 
 
 //    AUXILIAR FUNCTIONS
-
-    private boolean isAValidPointerType(String type)
-    {
-        boolean result = false;
-        if (type.equals("<int>"))
-            result = true;
-        else if (type.equals("<float>"))
-            result = true;
-        else if (type.equals("<string>"))
-            result = true;
-        else if (type.equals("<bool>"))
-            result = true;
-        return result;
-    }
-
-//    private String retrieveMulDivRemOperator (Projeto.MulDivRemContext ctx)
-//    {
-//        String operator = "";
-//        if(ctx.DIV() != null) operator = ctx.DIV().getText();
-//        else if(ctx.MUL() != null) operator = ctx.MUL().getText();
-//        else if(ctx.PERCENT() != null) operator = ctx.PERCENT().getText();
-//        return operator;
-//    }
-
-
-
 
 
     private Symbol.PType primitiveToPointer(Symbol.PType e1)

@@ -44,8 +44,8 @@ var_declaration_simple:
 
 
 var_declaration_init:
-        type IDENTIFIER EQUAL expression
-    |   type IDENTIFIER EQUAL (LBRACKET expression RBRACKET | NULL)
+        type IDENTIFIER EQUAL expression                            #DeclAndAtrib
+    |   type IDENTIFIER EQUAL (LBRACKET expression RBRACKET | NULL) #MemDecl
     ;
 
 
@@ -137,7 +137,7 @@ comparator_OR:
 /*-------FUNCTION DECLARATION-------*/
 function :
         IDENTIFIER LPAREN function_args* RPAREN body {notifyErrorListeners("Missing type of function");}
-    |   function_type IDENTIFIER LPAREN function_args* RPAREN body;
+    |   function_type IDENTIFIER LPAREN function_args? RPAREN body;
 
 function_args_old:
         function_arg
@@ -166,8 +166,10 @@ epilogue: EXTRACT block;
 block :
         LBLOCK (var_declaration*  instruction+)*  {notifyErrorListeners("Missing '}' to match '{'");}
     |   LBLOCK (var_declaration*  instruction+)* RBLOCK RBLOCK {notifyErrorListeners("Extraneous '}'");}
-    |   LBLOCK (var_declaration* instruction+)* RBLOCK;
+    |   LBLOCK  var_or_instruction*  RBLOCK;
 
+
+var_or_instruction: var_declaration | instruction;
 
 /*---FUNCTION INVOCATION---*/
 function_invocation :
@@ -205,8 +207,8 @@ writeln_fuction :
 
 /*-------INSTRUCTIONS-------*/
 instruction :
-        expression {notifyErrorListeners("Missing ';'");}   # Expression_insErr1
-    |   expression SEMI_COLON               # Expression_ins
+
+      expression SEMI_COLON               # Expression_ins
     |   control_instructions SEMI_COLON     # Control_ins
     |   attribution_instruction SEMI_COLON  # Attribution_ins
     |   conditional_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");} # Conditional_insErr1

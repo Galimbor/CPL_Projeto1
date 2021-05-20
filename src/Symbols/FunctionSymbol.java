@@ -7,6 +7,7 @@ public class FunctionSymbol extends Symbol {
 
     public List<Symbol> arguments;
 
+
     public FunctionSymbol(String type, String functionName)
     {
         super(type,functionName);
