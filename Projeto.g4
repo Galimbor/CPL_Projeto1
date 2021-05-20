@@ -19,21 +19,13 @@ var_declaration:
     |   var_declaration_init SEMI_COLON;
 
 
-
-
-/*-------TYPE-------*/
-pointer: STRING_POINTER
-        |   INT_POINTER
-        |   FLOAT_POINTER
-        |   BOOL_POINTER;
-
-
 /*-------TYPE-------*/
 type :
             INT
          |  FLOAT
          |  STRING
-         |  pointer;
+         |  BOOL
+         |  POINTER;
 
 function_type:
         type | VOID;
@@ -44,7 +36,7 @@ var_declaration_simple:
 
 
 var_declaration_init:
-        type IDENTIFIER EQUAL expression                            #DeclAndAtrib
+        type IDENTIFIER EQUAL expression #DeclAndAtrib
     |   type IDENTIFIER EQUAL (LBRACKET expression RBRACKET | NULL) #MemDecl
     ;
 
@@ -86,19 +78,11 @@ expression_evaluation:
     |   simple_expression                                               # SimpExp;
 
 
-
-//exp_mul_div_rem :   exp_MUL     # Exp_mul
-//                    | exp_DIV   # Exp_div
-//                    | exp_REM   # Exp_rem;
-//
-//exp_MUL: expression_evaluation MUL expression_evaluation;
-//exp_DIV: expression_evaluation DIV expression_evaluation;
-//exp_REM: expression_evaluation PERCENT expression_evaluation;
-
 binary_op_MUL_DIV_REM:
     MUL     #Mul
     | DIV   #Div
     | PERCENT #Percent ;
+
 
 
 /*-------OPERATORS-------*/
@@ -113,7 +97,6 @@ binary_op_ADD_SUB:
         ADD         # Add
     |   SUB         # Sub
     ;
-
 
 
 comparators:
@@ -137,18 +120,30 @@ comparator_OR:
 /*-------FUNCTION DECLARATION-------*/
 function :
         IDENTIFIER LPAREN function_args* RPAREN body {notifyErrorListeners("Missing type of function");}
-    |   function_type IDENTIFIER LPAREN function_args? RPAREN body;
+    |   function_normal
+    |   special_function;
+
+
+function_normal:
+         function_type IDENTIFIER LPAREN function_args? RPAREN body;
+
+special_function:
+        INT ALG LPAREN INT N COMMA STRING_POINTER ARGS RPAREN body;
 
 function_args_old:
         function_arg
     |   function_arg COMMA function_args_old; //Without left factoring
 
-function_args:
-        function_arg function_args_aux;
 
-function_args_aux:
-        COMMA function_args
-    |   ;
+function_args:
+        function_arg (COMMA function_arg)*;
+
+//function_args:
+//        function_arg function_args_aux;
+//
+//function_args_aux:
+//        COMMA function_args
+//    |   ;
 
 function_arg :
         type IDENTIFIER;
@@ -166,7 +161,7 @@ epilogue: EXTRACT block;
 block :
         LBLOCK (var_declaration*  instruction+)*  {notifyErrorListeners("Missing '}' to match '{'");}
     |   LBLOCK (var_declaration*  instruction+)* RBLOCK RBLOCK {notifyErrorListeners("Extraneous '}'");}
-    |   LBLOCK  var_or_instruction*  RBLOCK;
+    |   LBLOCK var_or_instruction* RBLOCK;
 
 
 var_or_instruction: var_declaration | instruction;
@@ -207,8 +202,7 @@ writeln_fuction :
 
 /*-------INSTRUCTIONS-------*/
 instruction :
-
-      expression SEMI_COLON               # Expression_ins
+    expression SEMI_COLON               # Expression_ins
     |   control_instructions SEMI_COLON     # Control_ins
     |   attribution_instruction SEMI_COLON  # Attribution_ins
     |   conditional_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");} # Conditional_insErr1

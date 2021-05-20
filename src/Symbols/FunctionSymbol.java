@@ -6,12 +6,14 @@ import java.util.List;
 public class FunctionSymbol extends Symbol {
 
     public List<Symbol> arguments;
+    boolean haveIns;
 
 
     public FunctionSymbol(String type, String functionName)
     {
         super(type,functionName);
-        this.arguments = new ArrayList<Symbol>();
+        haveIns = false;
+        this.arguments = new ArrayList<>();
     }
 
     public String toString()

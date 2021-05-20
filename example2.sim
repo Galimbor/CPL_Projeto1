@@ -1,0 +1,9 @@
+int x;
+float a;
+<int> b;
+<float> c;
+
+
+int alg(int n, <string> args) {
+
+}
