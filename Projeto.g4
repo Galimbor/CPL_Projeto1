@@ -20,15 +20,17 @@ var_declaration:
 
 
 /*-------TYPE-------*/
-pointer: STRING_POINTER
+pointer:    STRING_POINTER
         |   INT_POINTER
         |   FLOAT_POINTER
-        |   BOOL_POINTER;
+        |   BOOL_POINTER
+        ;
 
 type :
             INT
          |  FLOAT
          |  STRING
+         |  BOOL
          |  pointer;
 
 function_type:
