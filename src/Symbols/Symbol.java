@@ -16,7 +16,7 @@ public class Symbol {
         BOOL_POINTER,
         NULL_POINTER,
         STRING,
-        BOOLEAN
+        BOOL
     }
 
     public PType type;
@@ -72,7 +72,7 @@ public class Symbol {
     public static boolean isPrimitive(Symbol.PType e1)
     {
         return e1 == Symbol.PType.FLOAT ||
-                e1 == Symbol.PType.BOOLEAN ||
+                e1 == Symbol.PType.BOOL ||
                 e1 == Symbol.PType.STRING ||
                 e1 == Symbol.PType.INT;
     }

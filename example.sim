@@ -1,6 +1,6 @@
 <int> b;
 <float> c;
-int a = 3;
+bool a;
 
 
 float g(int ricardo) {
@@ -30,7 +30,7 @@ return 1;
 
 
 void nula() {
-1;
+a=f(1,2.0);
 }
 
 

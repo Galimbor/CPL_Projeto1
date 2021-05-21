@@ -220,6 +220,7 @@ public class RefChecker extends ProjetoBaseListener {
 
     //    control_instructions : RETURN expression?
     public void exitReturn(Projeto.ReturnContext ctx) {
+        this.currentFunction.hasIns = true;
         this.currentFunction.hasReturn = true;
         Symbol.PType expr = exprType.get(ctx.expression());
         if (this.currentFunction != null) {
@@ -305,7 +306,7 @@ public class RefChecker extends ProjetoBaseListener {
 
         if (Operator.isSimpleOperator(op)) {
             if (Symbol.isNumeric(e1) && Symbol.isNumeric(e2)) {
-                exprType.put(ctx, Symbol.PType.BOOLEAN);
+                exprType.put(ctx, Symbol.PType.BOOL);
             } else {
                 System.err.println("Something is wrong on line " + ctx.start.getLine());
                 this.validated = false;
@@ -314,7 +315,7 @@ public class RefChecker extends ProjetoBaseListener {
         } else if (Operator.isEQualOperator(op)) {
             if (Symbol.isPrimitive(e1) && Symbol.isPrimitive(e2)) {
                 if (e1 == e2) {
-                    exprType.put(ctx, Symbol.PType.BOOLEAN);
+                    exprType.put(ctx, Symbol.PType.BOOL);
                 } else {
                     System.err.println("They should be of the same type" + ctx.start.getLine());
                     this.validated = false;
@@ -322,9 +323,9 @@ public class RefChecker extends ProjetoBaseListener {
                 }
             } else if (Symbol.isAPointer(e1) && Symbol.isAPointer(e2)) {
                 if (e1 == Symbol.PType.NULL_POINTER || e2 == Symbol.PType.NULL_POINTER)
-                    exprType.put(ctx, Symbol.PType.BOOLEAN);
+                    exprType.put(ctx, Symbol.PType.BOOL);
                 else if (Symbol.areBothTypesEqual(e1, e2)) {
-                    exprType.put(ctx, Symbol.PType.BOOLEAN);
+                    exprType.put(ctx, Symbol.PType.BOOL);
                 } else {
                     System.err.println("They should be of the same type" + ctx.start.getLine());
                     this.validated = false;
@@ -345,8 +346,8 @@ public class RefChecker extends ProjetoBaseListener {
         Symbol.PType e1 = exprType.get(ctx.expression_evaluation(0));
         Symbol.PType e2 = exprType.get(ctx.expression_evaluation(1));
 
-        if (e1 == Symbol.PType.BOOLEAN && e2 == Symbol.PType.BOOLEAN) {
-            exprType.put(ctx, Symbol.PType.BOOLEAN);
+        if (e1 == Symbol.PType.BOOL && e2 == Symbol.PType.BOOL) {
+            exprType.put(ctx, Symbol.PType.BOOL);
         } else {
             System.err.println("Something is wrong on line " + ctx.start.getLine());
             this.validated = false;
@@ -361,8 +362,8 @@ public class RefChecker extends ProjetoBaseListener {
         Symbol.PType e1 = exprType.get(ctx.expression_evaluation(0));
         Symbol.PType e2 = exprType.get(ctx.expression_evaluation(1));
 
-        if (e1 == Symbol.PType.BOOLEAN && e2 == Symbol.PType.BOOLEAN) {
-            exprType.put(ctx, Symbol.PType.BOOLEAN);
+        if (e1 == Symbol.PType.BOOL && e2 == Symbol.PType.BOOL) {
+            exprType.put(ctx, Symbol.PType.BOOL);
         } else {
             System.err.println("Something is wrong on line " + ctx.start.getLine());
             this.validated = false;
@@ -451,7 +452,7 @@ public class RefChecker extends ProjetoBaseListener {
                 exprType.put(ctx, Symbol.PType.ERROR);
             }
         } else if (operator.equals("~")) {
-            if (e1 == Symbol.PType.BOOLEAN) exprType.put(ctx, e1);
+            if (e1 == Symbol.PType.BOOL) exprType.put(ctx, e1);
             else {
                 System.err.println("Invalid operand type " + e1.toString() + " on line " + ctx.start.getLine());
                 this.validated = false;
@@ -600,7 +601,29 @@ public class RefChecker extends ProjetoBaseListener {
 
     // (IDENTIFIER | expression) EQUAL expression;
     public void exitAttribution_instruction(Projeto.Attribution_instructionContext ctx) {
+        this.currentFunction.hasIns = true;
+        Symbol.PType leftSide;
+        Symbol.PType rightSide;
+        if (ctx.IDENTIFIER() == null) {
+            leftSide = this.exprType.get(ctx.expression(0));
+            if (!Symbol.isAPointer(leftSide)) {
+                System.err.println("Invalid type of attribution on line: " + ctx.start.getLine());
+                return;
+            }
+            rightSide = this.exprType.get(ctx.expression(1));
+        } else {
+            leftSide = this.currentScope.resolve(ctx.IDENTIFIER().getText()).type;
+            rightSide = this.exprType.get(ctx.expression(0));
+        }
 
+        if (leftSide == Symbol.PType.FLOAT && rightSide == Symbol.PType.INT) {
+
+        } else if (Symbol.isAPointer(leftSide) && rightSide == Symbol.PType.NULL_POINTER) {
+
+        } else if (rightSide == Symbol.PType.VOID)
+            System.err.println("Invalid type of attribution on line: " + ctx.start.getLine());
+        else if (rightSide != leftSide)
+            System.err.println("Invalid type of attribution on line: " + ctx.start.getLine());
     }
 
 
@@ -627,19 +650,17 @@ public class RefChecker extends ProjetoBaseListener {
     }
 
 
-
 //    AUXILIAR FUNCTIONS
 
 
     private Symbol.PType primitiveToPointer(Symbol.PType e1) {
-        if (e1 == Symbol.PType.BOOLEAN) return Symbol.PType.BOOL_POINTER;
+        if (e1 == Symbol.PType.BOOL) return Symbol.PType.BOOL_POINTER;
         else if (e1 == Symbol.PType.FLOAT) return Symbol.PType.FLOAT_POINTER;
         else if (e1 == Symbol.PType.STRING) return Symbol.PType.STRING_POINTER;
         else {
             return Symbol.PType.ERROR;
         }
     }
-
 
 
     //métodos auxiliar (é usado em 2 regras gramaticais)
