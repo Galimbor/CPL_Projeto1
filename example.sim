@@ -3,12 +3,12 @@
 bool a;
 
 
-float g(int ricardo) {
+int g(int ricardo) {
 return 3.0;
 }
 
 int d = 1;
-int x = g(1);
+float x = g(1);
 
 int f(int x, float y)
 {
@@ -25,6 +25,11 @@ int f(int x, float y)
 }
 
 int alg(int n, <string> args) {
+while 3 do
+{
+3+3;
+leave;
+}
 return 1;
 }
 

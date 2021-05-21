@@ -59,7 +59,7 @@ public class Symbol {
     public static boolean isAPrimitivePointer(Symbol.PType type)
     {
         return type == PType.BOOL_POINTER || type == PType.FLOAT_POINTER || type == PType.INT_POINTER
-                || type == PType.STRING_POINTER;
+                || type == PType.STRING_POINTER ;
     }
 
 
@@ -76,5 +76,16 @@ public class Symbol {
                 e1 == Symbol.PType.STRING ||
                 e1 == Symbol.PType.INT;
     }
+
+
+    public static boolean isCastingPossible(Symbol.PType e1, Symbol.PType e2)
+    {   boolean result = false;
+        if(e1 == PType.FLOAT && e2 == PType.INT)
+            result = true;
+        else if(Symbol.isAPointer(e1) && e2 == PType.NULL_POINTER)
+            result = true;
+        return result;
+    }
+
 
 }

@@ -17,6 +17,8 @@ public class RefChecker extends ProjetoBaseListener {
     public boolean haveAlg;
     public boolean validated;
 
+
+
     public ParseTreeProperty<Scope> scopes;
     public ParseTreeProperty<FunctionSymbol> functions;
     public ParseTreeProperty<Symbol.PType> exprType;
@@ -148,70 +150,50 @@ public class RefChecker extends ProjetoBaseListener {
     }
 
     public void exitPrologue(Projeto.PrologueContext ctx) {
+        List<Projeto.Var_or_instructionContext> listOfVar_or_instructions = ctx.block().var_or_instruction();
         if (this.currentFunction.type != Symbol.PType.VOID) {
-            int numberOfInsOrVar = ctx.block().var_or_instruction().size();
-
-            if (!this.currentFunction.hasIns)
-                checkInstruction(ctx.block().var_or_instruction());
-
-            Projeto.InstructionContext lastInsOrVar = ctx.block().var_or_instruction(numberOfInsOrVar - 1).instruction();
-            if (lastInsOrVar != null) {
-                if (!lastInsOrVar.getStart().getText().equals("return")) {
-//                    this.validated = false;
-                    System.err.println("The return needs to be the last instruction in the prologue block.");
+            int numberOfInsOrVar = listOfVar_or_instructions.size();
+            if (this.currentFunction.hasIns) {
+                int indexOfResult = checkResultIndex(listOfVar_or_instructions);
+                if (indexOfResult < numberOfInsOrVar - 1) {
+                    System.err.println("Return on prologue block of function " + this.currentFunction.name + " is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
+                    return;
                 }
-            } else {
-//                this.validated = false;
-                System.err.println("The return needs to be the last instruction in the prologue block.");
             }
+
         } else {
             if (this.currentFunction.hasReturn) {
-                int numberOfInsOrVar = ctx.block().var_or_instruction().size();
-
-                Projeto.InstructionContext lastInsOrVar = ctx.block().var_or_instruction(numberOfInsOrVar - 1).instruction();
-                if (lastInsOrVar != null) {
-                    if (!lastInsOrVar.getStart().getText().equals("return")) {
-//                        this.validated = false;
-                        System.err.println("The return needs to be the last instruction in the prologue block.");
-                    }
-                } else {
-//                    this.validated = false;
-                    System.err.println("The return needs to be the last instruction in the prologue block.");
+                int numberOfInsOrVar = listOfVar_or_instructions.size();
+                int indexOfResult = checkResultIndex(listOfVar_or_instructions);
+                if (indexOfResult < numberOfInsOrVar - 1) {
+                    System.out.println(indexOfResult);
+                    System.err.println("Return on prologue block is not the last instruction, line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
+                    return;
                 }
             }
         }
     }
 
     public void exitEpilogue(Projeto.EpilogueContext ctx) {
+        List<Projeto.Var_or_instructionContext> listOfVar_or_instructions = ctx.block().var_or_instruction();
         if (this.currentFunction.type != Symbol.PType.VOID) {
-
-            int numberOfInsOrVar = ctx.block().var_or_instruction().size();
-
-            if (!this.currentFunction.hasIns)
-                checkInstruction(ctx.block().var_or_instruction());
-            Projeto.InstructionContext lastInsOrVar = ctx.block().var_or_instruction(numberOfInsOrVar - 1).instruction();
-            if (lastInsOrVar != null) {
-                if (!lastInsOrVar.getStart().getText().equals("return")) {
-//                    this.validated = false;
-                    System.err.println("The return needs to be the last instruction in the epilogue block.");
+            int numberOfInsOrVar = listOfVar_or_instructions.size();
+            if (this.currentFunction.hasIns) {
+                int indexOfResult = checkResultIndex(listOfVar_or_instructions);
+                if (indexOfResult < numberOfInsOrVar - 1) {
+                    System.err.println("Return on epilogue block of function " + this.currentFunction.name + " is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
+                    return;
                 }
-            } else {
-//                this.validated = false;
-                System.err.println("The return needs to be the last instruction in the epilogue block.");
             }
+
         } else {
             if (this.currentFunction.hasReturn) {
-                int numberOfInsOrVar = ctx.block().var_or_instruction().size();
-
-                Projeto.InstructionContext lastInsOrVar = ctx.block().var_or_instruction(numberOfInsOrVar - 1).instruction();
-                if (lastInsOrVar != null) {
-                    if (!lastInsOrVar.getStart().getText().equals("return")) {
-//                        this.validated = false;
-                        System.err.println("The return needs to be the last instruction in the epilogue block.");
-                    }
-                } else {
-//                    this.validated = false;
-                    System.err.println("The return needs to be the last instruction in the epilogue block.");
+                int numberOfInsOrVar = listOfVar_or_instructions.size();
+                int indexOfResult = checkResultIndex(listOfVar_or_instructions);
+                if (indexOfResult < numberOfInsOrVar - 1) {
+                    System.out.println(indexOfResult);
+                    System.err.println("Return on epilogue block is not the last instruction, line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
+                    return;
                 }
             }
         }
@@ -278,13 +260,18 @@ public class RefChecker extends ProjetoBaseListener {
 
         //TODO - Catch an exception and return appropriate erro if the type doesn't exist
 
-        Symbol type = new Symbol(stype, name);
+        Symbol symbol = new Symbol(stype, name);
         Symbol.PType expression = exprType.get(ctx.expression());
         if (expression == Symbol.PType.NULL_POINTER)        //TODO make it prettier
         {
         }
+        else if(Symbol.isCastingPossible(symbol.type,expression))
+        {
+
+        }
         //TODO type identifier = id_invocation
-        else if (!(type.type == expression)) {
+
+        else if (!(symbol.type == expression)) {
             System.err.println("Invalid variable type  " + stype + " of variable " + name + " since the right side value is of type " + expression + ", Line: " + ctx.start.getLine());
 //            this.validated = false;
         }
@@ -648,6 +635,32 @@ public class RefChecker extends ProjetoBaseListener {
         }
         exprType.put(ctx, s.type);
     }
+
+//    write_function: WRITE LPAREN list_expressions? RPAREN;
+    public void exitWrite_function(Projeto.Write_functionContext ctx)
+    {
+        for (Projeto.ExpressionContext expression:
+             ctx.list_expressions().expression()) {
+            if(!Symbol.isPrimitive(exprType.get(expression)))
+            {
+                System.err.println("Write function can only receive primitive type arguments. Line : " + ctx.start.getLine());
+            }
+        }
+    }
+
+
+    //    write_function: WRITELN LPAREN list_expressions? RPAREN;
+    public void exitWriteln_fuction(Projeto.Writeln_fuctionContext ctx)
+    {
+        for (Projeto.ExpressionContext expression:
+                ctx.list_expressions().expression()) {
+            if(!Symbol.isPrimitive(exprType.get(expression)))
+            {
+                System.err.println("Writeln function can only receive primitive type arguments. Line : " + ctx.start.getLine());
+            }
+        }
+    }
+
 
 
 //    AUXILIAR FUNCTIONS

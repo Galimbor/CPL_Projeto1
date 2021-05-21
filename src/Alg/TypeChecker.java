@@ -1,7 +1,6 @@
 package Alg;
 
 import Symbols.FunctionSymbol;
-import Symbols.Operator;
 import Symbols.Scope;
 import Symbols.Symbol;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -18,6 +17,9 @@ public class TypeChecker extends ProjetoBaseListener {
     public boolean validated;
     public boolean haveAlg;
 
+
+    public boolean isInsideWhile;
+    public boolean isInsideSubBlock;
 
     public ParseTreeProperty<Symbol.PType> exprType = new ParseTreeProperty<>();
     public ParseTreeProperty<Scope> scopes = new ParseTreeProperty<>();
@@ -125,37 +127,74 @@ public class TypeChecker extends ProjetoBaseListener {
     }
 
 
-
+//    subblock_instruction: LBLOCK instruction* RBLOCK
     public void exitSubblock_instruction(Projeto.Subblock_instructionContext ctx) {
+        this.isInsideSubBlock = false;
+        List<Projeto.InstructionContext> listOfIns = ctx.instruction();
+        int numberOfIns = listOfIns.size();
+        if(this.isInsideWhile)
+        {
+            int indexOfRestartOrLeave = checkLeaveOrRestartIndex(listOfIns);
+            if(indexOfRestartOrLeave != -1 && indexOfRestartOrLeave < numberOfIns - 1 )
+            {
+                System.err.println("Leave or restart instruction on function " + this.currentFunction.name + " is not the last instruction of the sub block. Line: " + listOfIns.get(indexOfRestartOrLeave).start.getLine());
+                return;
+            }
+        }
+
+
+
         if (this.currentFunction.type != Symbol.PType.VOID) {
 
-            int numberOfInsOrVar = ctx.instruction().size() - 1;
 
-            Projeto.InstructionContext lastIns = ctx.instruction(numberOfInsOrVar);
-            if (lastIns != null) {
-                if (!lastIns.getStart().getText().equals("return")) {
-                    this.validated = false;
-                    System.err.println("The return needs to be the last instruction in the sub block.");
-                }
-            } else {
-                this.validated = false;
-                System.err.println("The return needs to be the last instruction in the sub block.");
+            int indexOfResult = checkResultIndex(listOfIns);
+            if (indexOfResult != -1 && indexOfResult < numberOfIns - 1) {
+                System.err.println("Return on sub block of function " + this.currentFunction.name + " is not the last instruction. Line: " + listOfIns.get(indexOfResult).start.getLine());
+                return;
             }
         } else {
             if (this.currentFunction.hasReturn) {
-                int numberOfInsOrVar = ctx.instruction().size() - 1;
 
-                Projeto.InstructionContext lastIns = ctx.instruction(numberOfInsOrVar);
-                if (lastIns != null) {
-                    if (!lastIns.getStart().getText().equals("return")) {
-                        this.validated = false;
-                        System.err.println("The return needs to be the last instruction in the sub block.");
-                    }
-                } else {
-                    this.validated = false;
-                    System.err.println("The return needs to be the last instruction in the sub block.");
+                int indexOfResult = checkResultIndex(listOfIns);
+                if (indexOfResult != -1 && indexOfResult < numberOfIns - 1) {
+                    System.err.println("Return on sub block of function " + this.currentFunction.name + " is not the last instruction. Line: " + listOfIns.get(indexOfResult).start.getLine());
+                    return;
                 }
             }
+        }
+
+    }
+
+    //    subblock_instruction: LBLOCK instruction* RBLOCK
+    public void enterSubblock_instruction(Projeto.Subblock_instructionContext ctx) {
+        this.isInsideSubBlock = true;
+    }
+
+//    instruction : cicle_instruction;
+    public void enterCicle_instruction(Projeto.Cicle_instructionContext ctx)
+    {
+        this.isInsideWhile = true;
+    }
+
+    //    instruction : cicle_instruction;
+    public void exitCicle_instruction(Projeto.Cicle_instructionContext ctx)
+    {
+        this.isInsideWhile = false;
+    }
+
+
+    public void exitLeave(Projeto.LeaveContext ctx)
+    {
+        if(!this.isInsideWhile && !this.isInsideSubBlock ){
+            System.err.println("The leave instruction declared in line " + ctx.start.getLine() + " needs to be inside the sub block of a cycle." );
+        }
+
+    }
+
+    public void exitRestart(Projeto.RestartContext ctx)
+    {
+        if(!this.isInsideWhile && !this.isInsideSubBlock ){
+            System.err.println("The restart instruction declared in line " + ctx.start.getLine() + " needs to be inside the sub block of a cycle." );
         }
     }
 
@@ -166,6 +205,33 @@ public class TypeChecker extends ProjetoBaseListener {
         }
     }
 
+    public int checkResultIndex(List<Projeto.InstructionContext> listOfIns) {
+        int result = -1;
+        int i = 0;
+        for (Projeto.InstructionContext listOfVarsOrIn : listOfIns) {
+            if ( listOfVarsOrIn.start.getText().equals("return")) {
+                result = i;
+                break;
+            }
+            i++;
+        }
+        return result;
+    }
+
+    public int checkLeaveOrRestartIndex(List<Projeto.InstructionContext> listOfIns) {
+        int result = -1;
+        int i = 0;
+        for (Projeto.InstructionContext listOfIn : listOfIns) {
+            if ( listOfIn.start.getText().equals("restart")
+                || listOfIn.start.getText().equals("leave"))
+            {
+                result = i;
+                break;
+            }
+            i++;
+        }
+        return result;
+    }
 
 
 
