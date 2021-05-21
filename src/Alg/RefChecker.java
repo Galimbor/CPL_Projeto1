@@ -57,22 +57,13 @@ public class RefChecker extends ProjetoBaseListener {
             this.semanticErrors++;
         } else {
             FunctionSymbol fs = (FunctionSymbol) s;
-            if (fs.arguments.size() == ctx.list_expressions().expression().size()) {
+            if (ctx.list_expressions() != null &&  fs.arguments.size() == ctx.list_expressions().expression().size()) {
                 for (int i = 0; i < ctx.list_expressions().expression().size(); i++) {
                     Symbol.PType calledArg = this.exprType.get(ctx.list_expressions().expression().get(i));
                     Symbol.PType declaredArg = fs.arguments.get(i).type;
 //                    System.out.println("declared: " + declaredArg);
 //                    System.out.println("called: " + calledArg);
-                    if (calledArg.equals(Symbol.PType.FLOAT) && declaredArg.equals(Symbol.PType.INT))
-                        continue;
-                    else if (calledArg.equals(Symbol.PType.NULL_POINTER) && declaredArg.equals(Symbol.PType.BOOL_POINTER))
-                        continue;
-                    else if (calledArg.equals(Symbol.PType.NULL_POINTER) && declaredArg.equals(Symbol.PType.STRING_POINTER))
-                        continue;
-                    else if (calledArg.equals(Symbol.PType.NULL_POINTER) && declaredArg.equals(Symbol.PType.FLOAT_POINTER))
-                        continue;
-                    else if (calledArg.equals(Symbol.PType.NULL_POINTER) && declaredArg.equals(Symbol.PType.INT_POINTER))
-                        continue;
+                    if(Symbol.isCastingPossible(declaredArg,calledArg)) continue;
                     if (!calledArg.equals(declaredArg)) {
                         System.err.println("Arguments of function " + functionName + " do not match the arguments " +
                                 "declared in the function declaration in line " + ctx.start.getLine());
@@ -206,26 +197,24 @@ public class RefChecker extends ProjetoBaseListener {
         this.currentFunction.hasReturn = true;
         Symbol.PType expr = exprType.get(ctx.expression());
         if (this.currentFunction != null) {
-            //TODO - Tratar das conversoes implicitas
             if (this.currentFunction.type == Symbol.PType.VOID) {
                 if (ctx.expression() != null) {
 //                    this.validated = false;
                     System.err.println("Function type is void but the return is of type " + expr + " on line " + ctx.start.getLine());
                 }
             }
-//            if (this.currentFunction.type.equals(Symbol.PType.FLOAT) && declaredArg.equals(Symbol.PType.INT))
-//                continue;
-//            else if (this.currentFunction.type.equals(Symbol.PType.NULL_POINTER) && declaredArg.equals(Symbol.PType.BOOL_POINTER))
-//                continue;
-//            else if (this.currentFunction.type.equals(Symbol.PType.NULL_POINTER) && declaredArg.equals(Symbol.PType.STRING_POINTER))
-//                continue;
-//            else if (this.currentFunction.type.equals(Symbol.PType.NULL_POINTER) && declaredArg.equals(Symbol.PType.FLOAT_POINTER))
-//                continue;
-//            else if (this.currentFunction.type.equals(Symbol.PType.NULL_POINTER) && declaredArg.equals(Symbol.PType.INT_POINTER))
-//                continue;
-            else if (this.currentFunction.type != expr) {
-//                this.validated = false;
-                System.err.println("Function is of type " + this.currentFunction.type + " and the return type is " + expr + " on line " + ctx.start.getLine());
+            else
+            {
+
+
+                if(Symbol.isCastingPossible(this.currentFunction.type, expr))
+                {
+
+                }
+                else if (this.currentFunction.type != expr) {
+    //                this.validated = false;R
+                    System.err.println("Function is of type " + this.currentFunction.type + " and the return type is " + expr + " on line " + ctx.start.getLine());
+                }
             }
         }
     }
@@ -258,18 +247,16 @@ public class RefChecker extends ProjetoBaseListener {
         String stype = ctx.type().start.getText();
         String name = ctx.IDENTIFIER().getText();
 
-        //TODO - Catch an exception and return appropriate erro if the type doesn't exist
 
         Symbol symbol = new Symbol(stype, name);
         Symbol.PType expression = exprType.get(ctx.expression());
-        if (expression == Symbol.PType.NULL_POINTER)        //TODO make it prettier
-        {
-        }
-        else if(Symbol.isCastingPossible(symbol.type,expression))
+//        if (expression == Symbol.PType.NULL_POINTER)        //TODO why did I add this here.. I dont get it.
+//        {
+//        }
+         if(Symbol.isCastingPossible(symbol.type,expression))
         {
 
         }
-        //TODO type identifier = id_invocation
 
         else if (!(symbol.type == expression)) {
             System.err.println("Invalid variable type  " + stype + " of variable " + name + " since the right side value is of type " + expression + ", Line: " + ctx.start.getLine());
@@ -309,7 +296,7 @@ public class RefChecker extends ProjetoBaseListener {
                     exprType.put(ctx, Symbol.PType.ERROR);
                 }
             } else if (Symbol.isAPointer(e1) && Symbol.isAPointer(e2)) {
-                if (e1 == Symbol.PType.NULL_POINTER || e2 == Symbol.PType.NULL_POINTER)
+                if ( (e1 == Symbol.PType.NULL_POINTER &&  e2 != Symbol.PType.NULL_POINTER) || (e1 != Symbol.PType.NULL_POINTER &&  e2 == Symbol.PType.NULL_POINTER) )
                     exprType.put(ctx, Symbol.PType.BOOL);
                 else if (Symbol.areBothTypesEqual(e1, e2)) {
                     exprType.put(ctx, Symbol.PType.BOOL);
@@ -364,7 +351,7 @@ public class RefChecker extends ProjetoBaseListener {
     public void exitMemDecl(Projeto.MemDeclContext ctx) {
         String stype = ctx.type().start.getText();
         String name = ctx.IDENTIFIER().getText();
-        //TODO - Catch an exception and return appropriate erro if the type doesn't exist
+
         Symbol type = new Symbol(stype, name);
 
 

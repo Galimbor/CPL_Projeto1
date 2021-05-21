@@ -2,10 +2,32 @@
 <float> c;
 bool a;
 
+<int> teste;
 
-int g(int ricardo) {
+
+int a = g(3);
+
+int g(float ricardo) {
+teste = null;
 return 3.0;
 }
+
+<string> wtf = returnvoid();
+
+void returnvoid()
+{
+    return;
+}
+
+void tester(){
+
+}
+
+
+float s(int ricardo) {
+return 3;
+}
+
 
 int d = 1;
 float x = g(1);
@@ -22,6 +44,7 @@ int f(int x, float y)
     int k = 6;
     int j,l;
     return x;
+    return null;
 }
 
 int alg(int n, <string> args) {
