@@ -16,7 +16,6 @@ public class Symbol {
         BOOL_POINTER,
         NULL_POINTER,
         STRING,
-        NULL,
         BOOLEAN
     }
 

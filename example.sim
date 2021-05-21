@@ -1,14 +1,14 @@
-int x;
-float a;
 <int> b;
 <float> c;
+int a = 3;
 
 
-int g(int ricardo) {
-int blabla;
-return blabla;
+float g(int ricardo) {
+return 3.0;
 }
 
+int d = 1;
+int x = g(1);
 
 int f(int x, float y)
 {
@@ -29,12 +29,19 @@ return 1;
 }
 
 
+void nula() {
+1;
+}
+
+
 int funcao(int artur, int ricardo, <string> jean) {
 int a;
 a=1;
+return 2;
 }
 
 int testeJean(int artur) {
 int a;
 a=1;
+return a;
 }
