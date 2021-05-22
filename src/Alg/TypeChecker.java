@@ -22,6 +22,9 @@ public class TypeChecker extends ProjetoBaseListener {
     public ParseTreeProperty<FunctionSymbol> functions = new ParseTreeProperty<>();
     private FunctionSymbol currentFunction;
 
+    //program :
+    //        EOF {notifyErrorListeners("Program must have at least one declaration");}
+    //    |   declaration+ EOF;
     public void enterProgram(Projeto.ProgramContext ctx) {
         globalScope = new Scope(null);
         currentScope = globalScope;
@@ -31,7 +34,9 @@ public class TypeChecker extends ProjetoBaseListener {
         haveAlg = false;
     }
 
-
+    //program :
+    //        EOF {notifyErrorListeners("Program must have at least one declaration");}
+    //    |   declaration+ EOF;
     public void exitProgram(Projeto.ProgramContext ctx) {
         if (!haveAlg)
             System.err.println("Must declare alg(int n, <string> args) function");
@@ -152,7 +157,7 @@ public class TypeChecker extends ProjetoBaseListener {
         this.isInsideWhile = false;
     }
 
-
+    //control_instructions: LEAVE
     public void exitLeave(Projeto.LeaveContext ctx) {
         if (!this.isInsideWhile && !this.isInsideSubBlock) {
             this.validated = false;
@@ -162,6 +167,7 @@ public class TypeChecker extends ProjetoBaseListener {
 
     }
 
+    //control_instructions: RESTART
     public void exitRestart(Projeto.RestartContext ctx) {
         if (!this.isInsideWhile && !this.isInsideSubBlock) {
             this.validated = false;

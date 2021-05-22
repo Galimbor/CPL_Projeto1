@@ -27,7 +27,9 @@ public class RefChecker extends ProjetoBaseListener {
         this.validated = validated;
     }
 
-
+    //program :
+    //        EOF {notifyErrorListeners("Program must have at least one declaration");}
+    //    |   declaration+ EOF;
     public void enterProgram(Projeto.ProgramContext ctx) {
         currentScope = this.scopes.get(ctx);
     }
@@ -102,7 +104,7 @@ public class RefChecker extends ProjetoBaseListener {
         this.currentScope = this.currentScope.getParentScope();
     }
 
-
+    // prologue: AT block;
     public void exitPrologue(Projeto.PrologueContext ctx) {
         List<Projeto.Var_or_instructionContext> listOfVar_or_instructions = ctx.block().var_or_instruction();
         if (this.currentFunction.type != Symbol.PType.VOID) {
@@ -130,7 +132,7 @@ public class RefChecker extends ProjetoBaseListener {
         }
     }
 
-
+    //  central: block;
     public void exitCentral(Projeto.CentralContext ctx) {
         List<Projeto.Var_or_instructionContext> listOfVar_or_instructions = ctx.block().var_or_instruction();
         if (this.currentFunction.type != Symbol.PType.VOID) {
@@ -163,7 +165,7 @@ public class RefChecker extends ProjetoBaseListener {
         }
     }
 
-
+    // epilogue: EXTRACT block;
     public void exitEpilogue(Projeto.EpilogueContext ctx) {
         List<Projeto.Var_or_instructionContext> listOfVar_or_instructions = ctx.block().var_or_instruction();
         if (this.currentFunction.type != Symbol.PType.VOID) {
@@ -495,59 +497,84 @@ public class RefChecker extends ProjetoBaseListener {
 
     }
 
-
+    //simple_expression:    INTEGER
     public void exitInt(Projeto.IntContext ctx) {
         exprType.put(ctx, Symbol.PType.INT);
     }
 
+    //simple_expression:    REAL
     public void exitReal(Projeto.RealContext ctx) {
         exprType.put(ctx, Symbol.PType.FLOAT);
     }
 
+    //simple_expression:    STRING
     public void exitString(Projeto.StringContext ctx) {
         exprType.put(ctx, Symbol.PType.STRING);
     }
 
+    //    binary_op_MUL_DIV_REM: MUL
     public void exitMul(Projeto.MulContext ctx) {
         opType.put(ctx, Operator.PType.MUL);
     }
 
+
+    //    binary_op_MUL_DIV_REM: DIV
     public void exitDiv(Projeto.DivContext ctx) {
         opType.put(ctx, Operator.PType.DIV);
     }
 
+
+    //    binary_op_MUL_DIV_REM: PERCENT
     public void exitPercent(Projeto.PercentContext ctx) {
         opType.put(ctx, Operator.PType.REM);
     }
 
+    //    comparators: LESSER
     public void exitLesser(Projeto.LesserContext ctx) {
         opType.put(ctx, Operator.PType.LESSER);
     }
 
+    //    comparators: LESSEQ
     public void exitLesseq(Projeto.LesseqContext ctx) {
         opType.put(ctx, Operator.PType.LESSEQ);
     }
 
+    //    comparators: GREATER
     public void exitGreater(Projeto.GreaterContext ctx) {
         opType.put(ctx, Operator.PType.GREATER);
     }
 
+    //    comparators: GREATEQ
     public void exitGreateq(Projeto.GreateqContext ctx) {
         opType.put(ctx, Operator.PType.GREATEQ);
     }
 
+    //    comparators: EQUALS
     public void exitEquals(Projeto.EqualsContext ctx) {
         opType.put(ctx, Operator.PType.EQUALS);
     }
 
+    //    comparators: NOTEQUALS
     public void exitNotequals(Projeto.NotequalsContext ctx) {
         opType.put(ctx, Operator.PType.NOTEQUALS);
     }
 
+    //    simple_expression: NULL
     public void exitNull(Projeto.NullContext ctx) {
         exprType.put(ctx, Symbol.PType.NULL_POINTER);
     }
 
+    //    instruction :
+    //    expression SEMI_COLON
+    //    |   control_instructions SEMI_COLON
+    //    |   attribution_instruction SEMI_COLON
+    //    |   conditional_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");}
+    //    |   conditional_instruction
+    //    |   cicle_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");}
+    //    |   cicle_instruction
+    //    |   subblock_instruction SEMI_COLON {notifyErrorListeners("Extraneous ';'");}
+    //    |   subblock_instruction
+    //    ;
     public void exitInstruction(Projeto.InstructionContext ctx) {
         this.currentFunction.hasIns = true;
     }
