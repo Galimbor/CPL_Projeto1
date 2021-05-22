@@ -18,12 +18,16 @@ void returnvoid()
 }
 
 void tester(){
-return;
+while (3>1)
+    do
+    return;
 }
 
 
 float s(int ricardo) {
-return 3;
+if ( 3>1)
+then return 'striadfa';
+
 }
 
 

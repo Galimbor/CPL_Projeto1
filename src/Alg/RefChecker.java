@@ -109,7 +109,7 @@ public class RefChecker extends ProjetoBaseListener {
             int numberOfInsOrVar = listOfVar_or_instructions.size();
             if (this.currentFunction.hasIns) {
                 int indexOfResult = checkResultIndex(listOfVar_or_instructions);
-                if (indexOfResult < numberOfInsOrVar - 1) {
+                if (indexOfResult < numberOfInsOrVar - 1 && indexOfResult != -1) {
                     this.validated = false;
                     this.semanticErrors++;
                     System.err.println("Return on prologue block of function " + this.currentFunction.name + " is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
@@ -120,7 +120,7 @@ public class RefChecker extends ProjetoBaseListener {
             if (this.currentFunction.hasReturn) {
                 int numberOfInsOrVar = listOfVar_or_instructions.size();
                 int indexOfResult = checkResultIndex(listOfVar_or_instructions);
-                if (indexOfResult < numberOfInsOrVar - 1) {
+                if (indexOfResult < numberOfInsOrVar - 1 && indexOfResult != -1) {
                     System.out.println(indexOfResult);
                     this.validated = false;
                     this.semanticErrors++;
@@ -143,7 +143,7 @@ public class RefChecker extends ProjetoBaseListener {
             int numberOfInsOrVar = listOfVar_or_instructions.size();
             if (this.currentFunction.hasIns) {
                 int indexOfResult = checkResultIndex(listOfVar_or_instructions);
-                if (indexOfResult < numberOfInsOrVar - 1) {
+                if (indexOfResult < numberOfInsOrVar - 1 && indexOfResult != -1) {
                     this.validated = false;
                     this.semanticErrors++;
                     System.err.println("Return on central block of function " + this.currentFunction.name + " is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
@@ -154,7 +154,7 @@ public class RefChecker extends ProjetoBaseListener {
             if (this.currentFunction.hasReturn) {
                 int numberOfInsOrVar = listOfVar_or_instructions.size();
                 int indexOfResult = checkResultIndex(listOfVar_or_instructions);
-                if (indexOfResult < numberOfInsOrVar - 1) {
+                if (indexOfResult < numberOfInsOrVar - 1 && indexOfResult != -1) {
                     this.validated = false;
                     this.semanticErrors++;
                     System.err.println("Return on central block is not the last instruction, line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
@@ -170,7 +170,7 @@ public class RefChecker extends ProjetoBaseListener {
             int numberOfInsOrVar = listOfVar_or_instructions.size();
             if (this.currentFunction.hasIns) {
                 int indexOfResult = checkResultIndex(listOfVar_or_instructions);
-                if (indexOfResult < numberOfInsOrVar - 1) {
+                if (indexOfResult < numberOfInsOrVar - 1 && indexOfResult != -1) {
                     this.validated = false;
                     this.semanticErrors++;
                     System.err.println("Return on epilogue block of function " + this.currentFunction.name + " is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
@@ -181,7 +181,7 @@ public class RefChecker extends ProjetoBaseListener {
             if (this.currentFunction.hasReturn) {
                 int numberOfInsOrVar = listOfVar_or_instructions.size();
                 int indexOfResult = checkResultIndex(listOfVar_or_instructions);
-                if (indexOfResult < numberOfInsOrVar - 1) {
+                if (indexOfResult < numberOfInsOrVar - 1 && indexOfResult != -1) {
                     this.validated = false;
                     this.semanticErrors++;
                     System.err.println("Return on epilogue block is not the last instruction, line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
@@ -319,7 +319,6 @@ public class RefChecker extends ProjetoBaseListener {
             semanticErrors++;
             exprType.put(ctx, Symbol.PType.ERROR);
         }
-
     }
 
 
