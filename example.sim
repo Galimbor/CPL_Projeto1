@@ -1,18 +1,16 @@
 <int> b;
 <float> c;
-bool a;
 
-<int> teste;
+<float> test = [1];
 
 
-int a = g(3);
+float a = g(3);
 
-int g(float ricardo) {
-teste = null;
+float g(float ricardo) {
+b = null;
 return 3.0;
 }
 
-<string> wtf = returnvoid();
 
 void returnvoid()
 {
@@ -20,7 +18,7 @@ void returnvoid()
 }
 
 void tester(){
-
+return;
 }
 
 
@@ -30,7 +28,7 @@ return 3;
 
 
 int d = 1;
-float x = g(1);
+float x = 3 % g(1);
 
 int f(int x, float y)
 {
@@ -38,13 +36,12 @@ int f(int x, float y)
     int b;
     <void> c = null;
     funcao(a, b, c);
-    float z;
+    float z = 'afas';
     int g =1;
     int i = 3;
     int k = 6;
     int j,l;
     return x;
-    return null;
 }
 
 int alg(int n, <string> args) {
@@ -62,10 +59,12 @@ a=f(1,2.0);
 }
 
 
-int funcao(int artur, int ricardo, <string> jean) {
+void funcao(int artur, int ricardo, <string> jean) {
 int a;
 a=1;
-return 2;
+<void> vazio;
+vazio = null;
+return;
 }
 
 int testeJean(int artur) {

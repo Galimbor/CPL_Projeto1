@@ -109,6 +109,6 @@ START_STRING : '\'' -> more,pushMode(STRING_MODE);
 
 mode STRING_MODE;
 
-STRING_ : ~('\'' | '\u0000' | '~')*(('~'~('\u0000')STRING_)|('\'')) -> popMode;
+STRING_LIT : ~('\'' | '\u0000' | '~')*(('~'~('\u0000')STRING_LIT)|('\'')) -> popMode;
 
 

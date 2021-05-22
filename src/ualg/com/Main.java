@@ -14,7 +14,7 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) {
         try {
-            ProjetoLexer simpleLexer = new ProjetoLexer(CharStreams.fromFileName("example.sim"));
+            ProjetoLexer simpleLexer = new ProjetoLexer(CharStreams.fromFileName("example2.sim"));
             Projeto simpleParser = new Projeto(new CommonTokenStream(simpleLexer));
             ParseTree tree = simpleParser.program();
             System.out.println("syntatic parsing finished");
@@ -23,15 +23,16 @@ public class Main {
             ParseTreeWalker walker = new ParseTreeWalker();
             // create listener then feed to walker
             System.out.println("Type checking...");
-            TypeChecker listener = new TypeChecker();
-            RefChecker listener2 = new RefChecker(listener.scopes, listener.exprType, listener.functions);
-            walker.walk(listener, tree);
-            walker.walk(listener2,tree);
-            if (listener.semanticErrors > 0)
-                System.err.println("There was " + listener.semanticErrors + " semantic errors");
+            TypeChecker type_listener = new TypeChecker();
+            walker.walk(type_listener, tree);
+            RefChecker ref_listener = new RefChecker(type_listener.scopes, type_listener.exprType, type_listener.functions, type_listener.validated);
+            walker.walk(ref_listener, tree);
+            if (!ref_listener.validated) {
+                int semanticErrors = type_listener.semanticErrors + ref_listener.semanticErrors;
+                System.err.println("There was(were) " + semanticErrors + " semantic error(errors)");
                 System.exit(1);
-
-
+            } else
+                System.out.println("No errors found!");
         } catch (IOException e) {
             e.printStackTrace();
         }

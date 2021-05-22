@@ -1,5 +1,4 @@
 int f(int j, int i) {
-return 1;
 int a;
 return 1;
 }
@@ -8,10 +7,10 @@ return 1;
 
 int alg(int n, <string> args) {
 return 1;
-return 2.0;
 }
 
 
 void g() {
 return;
 }
+
