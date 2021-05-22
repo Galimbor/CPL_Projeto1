@@ -212,7 +212,7 @@ public class TypeChecker extends ProjetoBaseListener {
         if (!this.currentScope.define(s)) {
             this.semanticErrors++;
             this.validated = false;
-            System.err.println("Redefining previously defined variable " + s.name + " in line " + ctx.start.getLine());
+            System.err.println("Redefining previously defined variable '" + s.name + "' in line " + ctx.start.getLine());
             return false;
         }
         this.scopes.put(ctx, currentScope);

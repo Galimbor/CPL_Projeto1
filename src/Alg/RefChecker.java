@@ -40,12 +40,12 @@ public class RefChecker extends ProjetoBaseListener {
         String functionName = ctx.IDENTIFIER().getText();
         Symbol s = scopes.get(ctx).resolve(functionName);
         if (s == null) {
-            System.err.println("Undefined function " + functionName + " in line " + ctx.IDENTIFIER().getSymbol().getLine() + " position: " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
+            System.err.println("Undefined function '" + functionName + "' on line " + ctx.IDENTIFIER().getSymbol().getLine() + " position: " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
             this.validated = false;
             this.semanticErrors++;
         }
         if (!(s instanceof FunctionSymbol)) {
-            System.err.println("Using var symbol " + functionName + " as function in line " + ctx.IDENTIFIER().getSymbol().getLine() + " position: " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
+            System.err.println("Using var symbol '" + functionName + "' as function on line " + ctx.IDENTIFIER().getSymbol().getLine() + " position: " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
             this.validated = false;
             this.semanticErrors++;
         } else {
@@ -58,8 +58,8 @@ public class RefChecker extends ProjetoBaseListener {
                     if (!calledArg.equals(declaredArg)) {
                         this.validated = false;
                         this.semanticErrors++;
-                        System.err.println("Arguments of function " + functionName + " do not match the arguments " +
-                                "declared in the function declaration in line " + ctx.start.getLine());
+                        System.err.println("Arguments of function '" + functionName + "' do not match the arguments " +
+                                "declared in the function declaration on line " + ctx.start.getLine());
                         return;
                     }
                 }
@@ -78,7 +78,7 @@ public class RefChecker extends ProjetoBaseListener {
     // special_function : INT ALG LPAREN INT N COMMA STRING_POINTER ARGS RPAREN body;
     public void exitSpecial_function(Projeto.Special_functionContext ctx) {
         if (!this.currentFunction.hasIns) {
-            System.err.println("Function " + this.currentFunction.name + " has to have at least one instruction" + ". Line: " + ctx.start.getLine());
+            System.err.println("Function '" + this.currentFunction.name + "' has to have at least one instruction" + ". Line: " + ctx.start.getLine());
             this.validated = false;
             this.semanticErrors++;
         }
@@ -98,7 +98,7 @@ public class RefChecker extends ProjetoBaseListener {
         if (!this.currentFunction.hasIns) {
             this.validated = false;
             this.semanticErrors++;
-            System.err.println("Function " + this.currentFunction.name + " has to have at least one instruction" + ". Line: " + ctx.start.getLine());
+            System.err.println("Function '" + this.currentFunction.name + "' has to have at least one instruction" + ". Line: " + ctx.start.getLine());
         }
         this.currentFunction = null;
         this.currentScope = this.currentScope.getParentScope();
@@ -114,7 +114,7 @@ public class RefChecker extends ProjetoBaseListener {
                 if (indexOfResult < numberOfInsOrVar - 1 && indexOfResult != -1) {
                     this.validated = false;
                     this.semanticErrors++;
-                    System.err.println("Return on prologue block of function " + this.currentFunction.name + " is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
+                    System.err.println("Return on prologue block of function '" + this.currentFunction.name + "' is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
                 }
             }
 
@@ -139,7 +139,7 @@ public class RefChecker extends ProjetoBaseListener {
             if (!this.currentFunction.hasReturn) {
                 this.validated = false;
                 this.semanticErrors++;
-                System.err.println("The central block of function " + this.currentFunction.name + " needs to have one return. Line: " + ctx.start.getLine());
+                System.err.println("Missing return statement. Line: " + ctx.start.getLine());
                 return;
             }
             int numberOfInsOrVar = listOfVar_or_instructions.size();
@@ -148,7 +148,7 @@ public class RefChecker extends ProjetoBaseListener {
                 if (indexOfResult < numberOfInsOrVar - 1 && indexOfResult != -1) {
                     this.validated = false;
                     this.semanticErrors++;
-                    System.err.println("Return on central block of function " + this.currentFunction.name + " is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
+                    System.err.println("Return on central block of function '" + this.currentFunction.name + "' is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
                 }
             }
 
@@ -175,7 +175,7 @@ public class RefChecker extends ProjetoBaseListener {
                 if (indexOfResult < numberOfInsOrVar - 1 && indexOfResult != -1) {
                     this.validated = false;
                     this.semanticErrors++;
-                    System.err.println("Return on epilogue block of function " + this.currentFunction.name + " is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
+                    System.err.println("Return on epilogue block of function '" + this.currentFunction.name + "' is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
                 }
             }
 
@@ -203,7 +203,7 @@ public class RefChecker extends ProjetoBaseListener {
                 if (ctx.expression() != null) {
                     this.validated = false;
                     this.semanticErrors++;
-                    System.err.println("Function type is void but the return is of type " + expr + " on line " + ctx.start.getLine());
+                    System.err.println("Unexpected return value on line " + ctx.start.getLine());
                 }
             } else {
                 if (Symbol.isCastingPossible(this.currentFunction.type, expr)) {
@@ -211,7 +211,7 @@ public class RefChecker extends ProjetoBaseListener {
                 } else if (this.currentFunction.type != expr) {
                     this.validated = false;
                     this.semanticErrors++;
-                    System.err.println("Function is of type " + this.currentFunction.type + " and the return type is " + expr + " on line " + ctx.start.getLine());
+                    System.err.println("Incompatible types: '" + expr + "' cannot be converted to '" + this.currentFunction.type + "' on line: " + ctx.start.getLine());
                 }
             }
         }
@@ -249,7 +249,6 @@ public class RefChecker extends ProjetoBaseListener {
         Symbol.PType e2 = exprType.get(ctx.expression_evaluation(1));
 
         Operator.PType op = opType.get(ctx.comparators());
-
         if (Operator.isSimpleOperator(op)) {
             if (Symbol.isNumeric(e1) && Symbol.isNumeric(e2)) {
                 exprType.put(ctx, Symbol.PType.BOOL);
@@ -257,7 +256,7 @@ public class RefChecker extends ProjetoBaseListener {
                 this.validated = false;
                 semanticErrors++;
                 exprType.put(ctx, Symbol.PType.ERROR);
-                System.err.println("Something is wrong on line " + ctx.start.getLine());
+                System.err.println("Operator '" + ctx.comparators().getText() + "' cannot be applied to '" + e1 + "', '" + e2 + "' on line " + ctx.start.getLine());
             }
         } else if (Operator.isEQualOperator(op)) {
             if (Symbol.isPrimitive(e1) && Symbol.isPrimitive(e2)) {
@@ -267,7 +266,7 @@ public class RefChecker extends ProjetoBaseListener {
                     this.validated = false;
                     semanticErrors++;
                     exprType.put(ctx, Symbol.PType.ERROR);
-                    System.err.println("They should be of the same type" + ctx.start.getLine());
+                    System.err.println("Operator '" + ctx.comparators().getText() + "' cannot be applied to '" + e1 + "', '" + e2 + "' on line " + ctx.start.getLine());
                 }
             } else if (Symbol.isAPointer(e1) && Symbol.isAPointer(e2)) {
                 if ((e1 == Symbol.PType.NULL_POINTER && e2 != Symbol.PType.NULL_POINTER) || (e1 != Symbol.PType.NULL_POINTER && e2 == Symbol.PType.NULL_POINTER))
@@ -278,14 +277,14 @@ public class RefChecker extends ProjetoBaseListener {
                     this.validated = false;
                     semanticErrors++;
                     exprType.put(ctx, Symbol.PType.ERROR);
-                    System.err.println("They should be of the same type" + ctx.start.getLine());
+                    System.err.println("Operator '" + ctx.comparators().getText() + "' cannot be applied to '" + e1 + "', '" + e2 + "' on line " + ctx.start.getLine());
                 }
             }
         } else {
             this.validated = false;
             semanticErrors++;
             exprType.put(ctx, Symbol.PType.ERROR);
-            System.err.println("Something is wrong on line " + ctx.start.getLine());
+            System.err.println("Operator '" + ctx.comparators().getText() + "' cannot be applied to '" + e1 + "' , '" + e2 + "' on line " + ctx.start.getLine());
         }
 
     }
@@ -295,11 +294,10 @@ public class RefChecker extends ProjetoBaseListener {
     public void exitCompAnd(Projeto.CompAndContext ctx) {
         Symbol.PType e1 = exprType.get(ctx.expression_evaluation(0));
         Symbol.PType e2 = exprType.get(ctx.expression_evaluation(1));
-
         if (e1 == Symbol.PType.BOOL && e2 == Symbol.PType.BOOL) {
             exprType.put(ctx, Symbol.PType.BOOL);
         } else {
-            System.err.println("Something is wrong on line " + ctx.start.getLine());
+            System.err.println("Operator '" + ctx.comparator_AND().getText() + "' cannot be applied to '" + e1 + "' , '" + e2 + "' on line " + ctx.start.getLine());
             this.validated = false;
             semanticErrors++;
             exprType.put(ctx, Symbol.PType.ERROR);
@@ -316,7 +314,7 @@ public class RefChecker extends ProjetoBaseListener {
         if (e1 == Symbol.PType.BOOL && e2 == Symbol.PType.BOOL) {
             exprType.put(ctx, Symbol.PType.BOOL);
         } else {
-            System.err.println("Something is wrong on line " + ctx.start.getLine());
+            System.err.println("Operator '" + ctx.comparator_OR().getText() + "' cannot be applied to '" + e1 + "', '" + e2 + "' on line " + ctx.start.getLine());
             this.validated = false;
             semanticErrors++;
             exprType.put(ctx, Symbol.PType.ERROR);
@@ -335,12 +333,12 @@ public class RefChecker extends ProjetoBaseListener {
             if (expression != Symbol.PType.INT) {
                 this.validated = false;
                 semanticErrors++;
-                System.err.println("Expression should be of type int but is of type" + expression + " on line " + ctx.start.getLine());
+                System.err.println("Expression should be of type int but is of type '" + expression + "' on line " + ctx.start.getLine());
             }
         } else {
             this.validated = false;
             semanticErrors++;
-            System.err.println("Invalid variable type  " + stype + " of variable " + name + " on line " + ctx.start.getLine());
+            System.err.println("Invalid variable type '" + stype + "' of variable '" + name + "' on line " + ctx.start.getLine());
         }
         defineSymbol(ctx, new Symbol(ctx.type().start.getText(), ctx.IDENTIFIER().getText()));
     }
@@ -368,7 +366,7 @@ public class RefChecker extends ProjetoBaseListener {
                 this.validated = false;
                 semanticErrors++;
                 exprType.put(ctx, Symbol.PType.ERROR);
-                System.err.println("Invalid types for * or / operator " + e1.toString() + " " + e2.toString() + " on line " + ctx.start.getLine());
+                System.err.println("Invalid types for '*' or '/' operator '" + e1.toString() + "', '" + e2.toString() + "' on line " + ctx.start.getLine());
             }
         } else if (op == Operator.PType.REM) {
             Symbol.PType e1 = exprType.get(ctx.expression_evaluation(0));
@@ -383,13 +381,13 @@ public class RefChecker extends ProjetoBaseListener {
                 this.validated = false;
                 semanticErrors++;
                 exprType.put(ctx, Symbol.PType.ERROR);
-                System.err.println("Invalid types for % operator " + e1.toString() + " " + e2.toString() + " on line " + ctx.start.getLine());
+                System.err.println("Invalid types for '%' operator '" + e1.toString() + "' , '" + e2.toString() + "' on line " + ctx.start.getLine());
             }
         } else {
             this.validated = false;
             semanticErrors++;
             exprType.put(ctx, Symbol.PType.ERROR);
-            System.err.println("Invalid operator " + op.toString() + " on line " + ctx.start.getLine());
+            System.err.println("Invalid operator '" + op.toString() + "' on line " + ctx.start.getLine());
         }
     }
 
@@ -406,7 +404,7 @@ public class RefChecker extends ProjetoBaseListener {
                     this.validated = false;
                     semanticErrors++;
                     exprType.put(ctx, Symbol.PType.ERROR);
-                    System.err.println("Invalid operand type " + e1.toString() + " on line " + ctx.start.getLine());
+                    System.err.println("Invalid operand type '" + e1.toString() + "' on line " + ctx.start.getLine());
                 }
                 break;
             case "~":
@@ -415,7 +413,7 @@ public class RefChecker extends ProjetoBaseListener {
                     this.validated = false;
                     semanticErrors++;
                     exprType.put(ctx, Symbol.PType.ERROR);
-                    System.err.println("Invalid operand type " + e1.toString() + " on line " + ctx.start.getLine());
+                    System.err.println("Invalid operand type '" + e1.toString() + "' on line " + ctx.start.getLine());
                 }
                 break;
             case "?":
@@ -426,7 +424,7 @@ public class RefChecker extends ProjetoBaseListener {
                     this.validated = false;
                     semanticErrors++;
                     exprType.put(ctx, Symbol.PType.ERROR);
-                    System.err.println("Invalid type" + e1.toString() + " on line " + ctx.start.getLine());
+                    System.err.println("Invalid type '" + e1 + "' on line " + ctx.start.getLine());
                 }
                 break;
         }
@@ -442,15 +440,15 @@ public class RefChecker extends ProjetoBaseListener {
             this.validated = false;
             semanticErrors++;
             exprType.put(ctx, Symbol.PType.ERROR);
-            System.err.println("Invalid type for " + e1 + "[" + e2 + "]" + " on line " + ctx.start.getLine());
+            System.err.println("Invalid type for ;" + e1 + "[" + e2 + "]'" + " on line " + ctx.start.getLine());
         }
         if (e2 != Symbol.PType.INT) {
             this.validated = false;
             semanticErrors++;
             exprType.put(ctx, Symbol.PType.ERROR);
-            System.err.println("E2 is not an integer but a  " + e2.toString() + " on line " + ctx.start.getLine());
+            System.err.println("E2 is not an 'INT' but a '" + e2.toString() + "' on line " + ctx.start.getLine());
         }
-        exprType.put(ctx, e1);
+        exprType.put(ctx, pointerToPrimitive(e1));
     }
 
 
@@ -492,7 +490,7 @@ public class RefChecker extends ProjetoBaseListener {
             this.validated = false;
             semanticErrors++;
             exprType.put(ctx, Symbol.PType.ERROR);
-            System.err.println("Something is wrong on line " + ctx.start.getLine());
+            System.err.println("Operator '" + ctx.binary_op_ADD_SUB().getText() + "' cannot be applied to '" + e1 + "', '" + e2 + "' on line " + ctx.start.getLine());
         }
 
     }
@@ -564,6 +562,17 @@ public class RefChecker extends ProjetoBaseListener {
         exprType.put(ctx, Symbol.PType.NULL_POINTER);
     }
 
+    //    simple_expression: NULL
+    public void exitTrue(Projeto.TrueContext ctx) {
+        exprType.put(ctx, Symbol.PType.BOOL);
+    }
+
+    //    simple_expression: NULL
+    public void exitFalse(Projeto.FalseContext ctx) {
+        exprType.put(ctx, Symbol.PType.BOOL);
+    }
+
+
     //    instruction :
     //    expression SEMI_COLON
     //    |   control_instructions SEMI_COLON
@@ -590,10 +599,14 @@ public class RefChecker extends ProjetoBaseListener {
         this.currentFunction.hasIns = true;
         Symbol.PType leftSide;
         Symbol.PType rightSide;
-        if (this.currentScope.resolve(ctx.IDENTIFIER().getText()) == null) {
+        if (ctx.IDENTIFIER() == null) {
+            leftSide = this.exprType.get(ctx.expression(0));
+            rightSide = this.exprType.get(ctx.expression(1));
+        }
+        else if (this.currentScope.resolve(ctx.IDENTIFIER().getText()) == null) {
             this.validated = false;
             this.semanticErrors++;
-            System.err.println("Undefined variable " + ctx.IDENTIFIER().getText() + " in line " + ctx.IDENTIFIER().getSymbol().getLine() + " position " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
+            System.err.println("Undefined variable '" + ctx.IDENTIFIER().getText() + "' on line " + ctx.IDENTIFIER().getSymbol().getLine() + " position " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
             return;
         } else {
             leftSide = this.currentScope.resolve(ctx.IDENTIFIER().getText()).type;
@@ -603,11 +616,11 @@ public class RefChecker extends ProjetoBaseListener {
             if (rightSide == Symbol.PType.VOID) {
                 this.validated = false;
                 this.semanticErrors++;
-                System.err.println("Invalid type of attribution (" + leftSide + " = " + rightSide + ") on line: " + ctx.start.getLine());
+                System.err.println("Incompatible types: '" + rightSide + "' cannot be converted to '" + leftSide + "' on line: " + ctx.start.getLine());
             } else if (rightSide != leftSide) {
                 this.validated = false;
                 this.semanticErrors++;
-                System.err.println("Invalid type of attribution (" + leftSide + " = " + rightSide + ") on line: " + ctx.start.getLine());
+                System.err.println("Incompatible types: '" + rightSide + "' cannot be converted to '" + leftSide + "' on line: " + ctx.start.getLine());
             }
     }
 
@@ -620,7 +633,7 @@ public class RefChecker extends ProjetoBaseListener {
             this.validated = false;
             this.semanticErrors++;
             this.exprType.put(ctx, Symbol.PType.ERROR);
-            System.err.println("Undefined variable " + variableName + " in line " + ctx.IDENTIFIER().getSymbol().getLine() + " position " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
+            System.err.println("Undefined variable '" + variableName + "' on line " + ctx.IDENTIFIER().getSymbol().getLine() + " position " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
             return;
         }
 
@@ -628,7 +641,7 @@ public class RefChecker extends ProjetoBaseListener {
             this.validated = false;
             this.semanticErrors++;
             this.exprType.put(ctx, Symbol.PType.ERROR);
-            System.err.println("Using function symbol " + variableName + " as variable in line " + ctx.IDENTIFIER().getSymbol().getLine());
+            System.err.println("Using function symbol '" + variableName + "' as variable on line " + ctx.IDENTIFIER().getSymbol().getLine());
             return;
         }
         this.exprType.put(ctx, s.type);
@@ -667,10 +680,26 @@ public class RefChecker extends ProjetoBaseListener {
     private Symbol.PType primitiveToPointer(Symbol.PType e1) {
         if (e1 == Symbol.PType.BOOL)
             return Symbol.PType.BOOL_POINTER;
+        else if (e1 == Symbol.PType.INT)
+            return Symbol.PType.INT_POINTER;
         else if (e1 == Symbol.PType.FLOAT)
             return Symbol.PType.FLOAT_POINTER;
         else if (e1 == Symbol.PType.STRING)
             return Symbol.PType.STRING_POINTER;
+        else
+            return Symbol.PType.ERROR;
+    }
+
+    //converts primitive type to a pointer type
+    private Symbol.PType pointerToPrimitive(Symbol.PType e1) {
+        if (e1 == Symbol.PType.BOOL_POINTER)
+            return Symbol.PType.BOOL;
+        else if (e1 == Symbol.PType.FLOAT_POINTER)
+            return Symbol.PType.FLOAT;
+        else if (e1 == Symbol.PType.STRING_POINTER)
+            return Symbol.PType.STRING;
+        else if(e1 == Symbol.PType.INT_POINTER)
+            return Symbol.PType.INT;
         else
             return Symbol.PType.ERROR;
     }
@@ -694,7 +723,7 @@ public class RefChecker extends ProjetoBaseListener {
         if (!this.currentScope.define(s)) {
             this.validated = false;
             this.semanticErrors++;
-            System.err.println("Redefining previously defined variable " + s.name + " in line " + ctx.start.getLine());
+            System.err.println("Redefining previously defined variable '" + s.name + "' on line " + ctx.start.getLine());
             return;
         }
         this.scopes.put(ctx, currentScope);

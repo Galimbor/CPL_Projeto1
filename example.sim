@@ -3,11 +3,13 @@
 
 <float> test = [1];
 
+<int> array = [50];
 
 float a = g(3);
 
 float g(float ricardo) {
 b = null;
+array[0] = 1;
 return 3.0;
 }
 
@@ -18,21 +20,18 @@ void returnvoid()
 }
 
 void tester(){
-while (3>1)
-    do
-    return;
+return;
 }
 
 
 float s(int ricardo) {
-if ( 3>1)
-then return 'striadfa';
+return 1;
 
 }
 
 
 int d = 1;
-float x = 3 % g(1);
+float x = 3 % 1;
 
 int f(int x, float y)
 {
@@ -40,7 +39,7 @@ int f(int x, float y)
     int b;
     <void> c = null;
     funcao(a, b, c);
-    float z = 'afas';
+    bool z = true;
     int g =1;
     int i = 3;
     int k = 6;

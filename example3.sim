@@ -1,0 +1,8 @@
+<float> livro = [50];
+
+int alg(int n, <string> args)
+{
+int a = 1;
+livro[a] = 2;
+return livro[2];
+}
