@@ -14,6 +14,44 @@ return 3.0;
 }
 
 
+float testing()@{
+<string> wtf = [5];
+}{
+string test = wtf[3+2];
+return null;
+}
+>>{
+wt = 3;
+int wtff = ((5)) + 1;
+}
+
+
+float licardo(float ricardo){
+int ricardo = 5;
+int b = 5;
+<void> lmao = [5];
+<void> xpto;
+<void> xpt = xpto[1];
++5;
++5.5;
++lmao;
+float leggo = +5;
+int liuk = +5.0;
+bool barak = ~false;
+bool obama = ~1.0;
+<int> calao =  ?returnvoid();
+<int> calo2 = ?test;
+<int> calo3 = ?b;
+<int> move = calo3 + 5;
+<int> move2 = xpto + 5;
+bool letsgo =  test == move;
+bool letgo = move == move2;
+bool let = xpto == move;
+bool le = xpto == xpto;
+}
+int ricardo = 2;
+float laoul = ricardo;
+
 void returnvoid()
 {
     return;

@@ -60,7 +60,7 @@ expression:
 simple_expression:
         INTEGER                 # Int
     |   REAL                    # Real
-    |   STRING_LIT                 # String
+    |   STRING                  # String
     |   NULL                    # Null
     |   TRUE                    # True
     |   FALSE                   # False
@@ -71,11 +71,11 @@ simple_expression:
 
 //WITH ANTLR
 expression_evaluation:
-        LPAREN expression_evaluation {notifyErrorListeners("Missing ')' to match '('");}    # ParenExpErr1
-    |   LPAREN expression_evaluation RPAREN RPAREN {notifyErrorListeners("Extraneous ')'");}    #ParenExpErr2
-    |   LPAREN expression_evaluation RPAREN     # ParenExp
-    |   expression_evaluation LBRACKET expression_evaluation {notifyErrorListeners("Missing ']' to match '['");}    # PointerExpErr1
-    |   expression_evaluation LBRACKET expression_evaluation RBRACKET RBRACKET{notifyErrorListeners("Extraneous ']'");} # PointerExpErr2
+//        LPAREN expression_evaluation {notifyErrorListeners("Missing ')' to match '('");}    # ParenExpErr1
+//    |   LPAREN expression_evaluation RPAREN RPAREN {notifyErrorListeners("Extraneous ')'");}    #ParenExpErr2
+      LPAREN expression_evaluation RPAREN     # ParenExp
+//    |   expression_evaluation LBRACKET expression_evaluation {notifyErrorListeners("Missing ']' to match '['");}    # PointerExpErr1
+//    |   expression_evaluation LBRACKET expression_evaluation RBRACKET RBRACKET{notifyErrorListeners("Extraneous ']'");} # PointerExpErr2
     |   expression_evaluation LBRACKET expression_evaluation RBRACKET # PointerExp
     |   unary_operators expression_evaluation   # UnaryExp
     |   expression_evaluation binary_op_MUL_DIV_REM expression_evaluation   # MulDivRem
@@ -168,8 +168,8 @@ central: block;
 epilogue: EXTRACT block;
 
 block :
-        LBLOCK (var_declaration*  instruction+)*  {notifyErrorListeners("Missing '}' to match '{'");}
-    |   LBLOCK (var_declaration*  instruction+)* RBLOCK RBLOCK {notifyErrorListeners("Extraneous '}'");}
+//        LBLOCK (var_declaration*  instruction+)*  {notifyErrorListeners("Missing '}' to match '{'");}
+//    |   LBLOCK (var_declaration*  instruction+)* RBLOCK RBLOCK {notifyErrorListeners("Extraneous '}'");}
     |   LBLOCK var_or_instruction* RBLOCK;
 
 

@@ -142,13 +142,16 @@ public class RefChecker extends ProjetoBaseListener {
                 System.err.println("Missing return statement. Line: " + ctx.start.getLine());
                 return;
             }
-            int numberOfInsOrVar = listOfVar_or_instructions.size();
+            int numberOfInsOrVar = countInstrutions(listOfVar_or_instructions);
             if (this.currentFunction.hasIns) {
                 int indexOfResult = checkResultIndex(listOfVar_or_instructions);
+                System.out.println("Number Of vars and ins is " + numberOfInsOrVar + " while the index of result is " + indexOfResult);
                 if (indexOfResult < numberOfInsOrVar - 1 && indexOfResult != -1) {
                     this.validated = false;
                     this.semanticErrors++;
-                    System.err.println("Return on central block of function '" + this.currentFunction.name + "' is not the last instruction. Line: " + listOfVar_or_instructions.get(indexOfResult).start.getLine());
+//                    TODO - getting the line like this doesnt work anyore
+
+                    System.err.println("Return on central block of function '" + this.currentFunction.name + "' is not the last instruction. Line: ") ;
                 }
             }
 
@@ -418,6 +421,7 @@ public class RefChecker extends ProjetoBaseListener {
                 break;
             case "?":
                 if (Symbol.isPrimitive(e1)) {
+                    System.out.println(e1);
                     Symbol.PType primitivePointer = primitiveToPointer(e1);
                     exprType.put(ctx, primitivePointer);
                 } else {
@@ -440,7 +444,7 @@ public class RefChecker extends ProjetoBaseListener {
             this.validated = false;
             semanticErrors++;
             exprType.put(ctx, Symbol.PType.ERROR);
-            System.err.println("Invalid type for ;" + e1 + "[" + e2 + "]'" + " on line " + ctx.start.getLine());
+            System.err.println("Invalid type for : " + e1 + "[" + e2 + "]" + " on line " + ctx.start.getLine());
         }
         if (e2 != Symbol.PType.INT) {
             this.validated = false;
@@ -709,14 +713,83 @@ public class RefChecker extends ProjetoBaseListener {
         int result = -1;
         int i = 0;
         for (Projeto.Var_or_instructionContext listOfVarsOrIn : listOfVarsOrIns) {
-            if (listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().start.getText().equals("return")) {
-                result = i;
-                break;
+            if(listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().subblock_instruction() != null ){
+                result = checkResultSubblock(listOfVarsOrIn.instruction().subblock_instruction(), i);
+                if(result != -1) break;
+            }
+            else if (listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().start.getText().equals("return")) {
+            result = i;
+            break;
             }
             i++;
         }
+        System.out.println("The result is " + result);
         return result;
     }
+
+
+    public int countInstrutions(List<Projeto.Var_or_instructionContext> listOfVarsOrIns)
+    {
+        int result = 0;
+        for (Projeto.Var_or_instructionContext listOfVarsOrIn : listOfVarsOrIns) {
+            if(listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().subblock_instruction() != null ){
+                result = countSubblockInstructions(listOfVarsOrIn.instruction().subblock_instruction(), result + 1);
+            }
+            else{
+                result++;
+            }
+
+        }
+        return result;
+    }
+
+    private int countSubblockInstructions(Projeto.Subblock_instructionContext ctx, int result)
+    {
+        for (Projeto.InstructionContext ins: ctx.instruction()
+        ) {
+            if(ins.subblock_instruction() != null)
+            {
+                result = countSubblockInstructions(ins.subblock_instruction(), result + 1);
+            }
+            else{
+                result ++;
+            }
+        }
+        return  result;
+    }
+
+
+    public int checkResultSubblock(Projeto.Subblock_instructionContext ctx, int index)
+    {
+        int result = index;
+        for (Projeto.InstructionContext ins: ctx.instruction()
+             ) {
+            if(ins.subblock_instruction() != null)
+            {
+                result++;
+                index++;
+                result = checkResultSubblock(ins.subblock_instruction(), result);
+                if(result != -1)
+                {
+                    return result;
+                }
+
+                result = index;
+                result += ins.subblock_instruction().instruction().size();
+
+            }
+            else if (ins.control_instructions() != null && ins.control_instructions().start.getText().equals("return")  )
+            {
+                System.out.println("Function name : " + this.currentFunction );
+                System.out.println("Found the return on index " + index + " on line " + ins.start.getLine());
+                return result;
+            }
+            result++;
+            index++;
+        }
+        return -1;
+    }
+
 
     //defines symbol in the scope
     private void defineSymbol(ParserRuleContext ctx, Symbol s) {
