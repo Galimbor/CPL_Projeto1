@@ -142,8 +142,15 @@ public class RefChecker extends ProjetoBaseListener {
                 System.err.println("Missing return statement. Line: " + ctx.start.getLine());
                 return;
             }
+
             int numberOfInsOrVar = countInstrutions(listOfVar_or_instructions);
-            if (this.currentFunction.hasIns) {
+            int lastLine = countInstrutionsLinha(listOfVar_or_instructions);
+            System.out.println("The last line is : " + lastLine);
+            if (this.currentFunction.hasIns && lastLine != -1) {
+
+                int linhaResult = checkResultLine(listOfVar_or_instructions);
+                System.out.println("THE Result index IS " + linhaResult);
+
                 int indexOfResult = checkResultIndex(listOfVar_or_instructions);
                 System.out.println("Number Of vars and ins is " + numberOfInsOrVar + " while the index of result is " + indexOfResult);
                 if (indexOfResult < numberOfInsOrVar - 1 && indexOfResult != -1) {
@@ -151,7 +158,7 @@ public class RefChecker extends ProjetoBaseListener {
                     this.semanticErrors++;
 //                    TODO - getting the line like this doesnt work anyore
 
-                    System.err.println("Return on central block of function '" + this.currentFunction.name + "' is not the last instruction. Line: ") ;
+                    System.err.println("Return on central block of function '" + this.currentFunction.name + "' is not the last instruction. Line: " + linhaResult) ;
                 }
             }
 
@@ -732,6 +739,7 @@ public class RefChecker extends ProjetoBaseListener {
     {
         int result = 0;
         for (Projeto.Var_or_instructionContext listOfVarsOrIn : listOfVarsOrIns) {
+
             if(listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().subblock_instruction() != null ){
                 result = countSubblockInstructions(listOfVarsOrIn.instruction().subblock_instruction(), result + 1);
             }
@@ -742,6 +750,46 @@ public class RefChecker extends ProjetoBaseListener {
         }
         return result;
     }
+
+    public int countInstrutionsLinha(List<Projeto.Var_or_instructionContext> listOfVarsOrIns)
+    {
+        int lastElementIndex = listOfVarsOrIns.size() - 1;
+
+        int linha = -1;
+
+        if(lastElementIndex >= 0 )
+        {
+            Projeto.Var_or_instructionContext lastElement = listOfVarsOrIns.get(lastElementIndex);
+            if(lastElement.instruction() != null && lastElement.instruction().subblock_instruction() != null)
+            {
+                linha = countSubblockInstructionsLinha(lastElement.instruction().subblock_instruction(), linha);
+            }
+            else
+            {
+                linha = lastElement.start.getLine();
+            }
+        }
+        return linha;
+    }
+
+    private int countSubblockInstructionsLinha(Projeto.Subblock_instructionContext ctx, int linha)
+    {
+        for (Projeto.InstructionContext ins: ctx.instruction()
+        ) {
+            if(ins.subblock_instruction() != null)
+            {
+                linha = ins.start.getLine();
+                linha = countSubblockInstructionsLinha(ins.subblock_instruction(), linha);
+
+            }
+            else{
+                linha = ins.start.getLine();
+            }
+        }
+        return  linha;
+    }
+
+
 
     private int countSubblockInstructions(Projeto.Subblock_instructionContext ctx, int result)
     {
@@ -757,6 +805,51 @@ public class RefChecker extends ProjetoBaseListener {
         }
         return  result;
     }
+
+
+    //gets index of first 'result' in list of instructions or variables
+    public int checkResultLine(List<Projeto.Var_or_instructionContext> listOfVarsOrIns) {
+        int line = -1;
+        for (Projeto.Var_or_instructionContext listOfVarsOrIn : listOfVarsOrIns) {
+            if(listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().subblock_instruction() != null ){
+                line = checkResultSubblockLinhas(listOfVarsOrIn.instruction().subblock_instruction(), line);
+                if(line != -1) break;
+            }
+            else if (listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().start.getText().equals("return")) {
+                line  = listOfVarsOrIn.instruction().start.getLine();
+                break;
+            }
+
+        }
+        return line;
+    }
+
+
+
+    public int checkResultSubblockLinhas(Projeto.Subblock_instructionContext ctx, int line)
+    {
+        for (Projeto.InstructionContext ins: ctx.instruction()
+        ) {
+            if(ins.subblock_instruction() != null)
+            {
+                line = checkResultSubblockLinhas(ins.subblock_instruction(), line);
+                if(line != -1)
+                {
+                    return line;
+                }
+
+            }
+            else if (ins.control_instructions() != null && ins.control_instructions().start.getText().equals("return")  )
+            {
+                System.out.println("Function name : " + this.currentFunction );
+                System.out.println("Found the return" + " on line " + ins.start.getLine());
+                return  ins.start.getLine();
+            }
+        }
+        return -1;
+    }
+
+
 
 
     public int checkResultSubblock(Projeto.Subblock_instructionContext ctx, int index)
