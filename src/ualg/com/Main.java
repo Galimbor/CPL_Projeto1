@@ -14,7 +14,7 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) {
         try {
-            ProjetoLexer simpleLexer = new ProjetoLexer(CharStreams.fromFileName("gamer.sim"));
+            ProjetoLexer simpleLexer = new ProjetoLexer(CharStreams.fromFileName("gamer2.sim"));
             Projeto simpleParser = new Projeto(new CommonTokenStream(simpleLexer));
             ParseTree tree = simpleParser.program();
             System.out.println("syntatic parsing finished");
