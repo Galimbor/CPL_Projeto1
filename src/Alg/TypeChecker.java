@@ -6,6 +6,7 @@ import Symbols.Symbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
+import java.util.HashSet;
 import java.util.Stack;
 
 public class TypeChecker extends ProjetoBaseListener {
@@ -22,6 +23,7 @@ public class TypeChecker extends ProjetoBaseListener {
     public ParseTreeProperty<Scope> scopes = new ParseTreeProperty<>();
     public ParseTreeProperty<FunctionSymbol> functions = new ParseTreeProperty<>();
     private FunctionSymbol currentFunction;
+    private HashSet<Integer> leaveAndRestart = new HashSet<>();
 
     //program :
     //        EOF {notifyErrorListeners("Program must have at least one declaration");}
@@ -150,16 +152,22 @@ public class TypeChecker extends ProjetoBaseListener {
             int leaveOrRestartLine = checkLeaveOrRestartSubblockLines(ins, ctx.start.getLine());
 //            System.out.println("last line " + lastLine);
 //            System.out.println("leaveorrestart line " + leaveOrRestartLine);
-            if (this.isInsideWhile.peek()) {
+//            System.out.println("My line is " + ins.start.getLine());
+            if (!this.leaveAndRestart.contains(leaveOrRestartLine)) {
                 if (leaveOrRestartLine == -1) {
+
+                } else if (!this.leaveAndRestart.contains(leaveOrRestartLine) && lastLine != -1 && leaveOrRestartLine < lastLine) {
                     this.validated = false;
                     this.semanticErrors++;
+
+                    System.out.println("Last line is " + lastLine + " and leave line is " + leaveOrRestartLine);
                     System.err.println("Leave or restart instruction on function " + this.currentFunction.name + " is not the last instruction of the sub block. Line: " + leaveOrRestartLine);
-                } else if (lastLine != -1 && leaveOrRestartLine < lastLine) {
-                    this.validated = false;
-                    this.semanticErrors++;
-                    System.err.println("Leave or restart instruction on function " + this.currentFunction.name + " is not the last instruction of the sub block. Line: " + leaveOrRestartLine);
+                    this.leaveAndRestart.add(leaveOrRestartLine);
                 }
+                else {
+                    this.leaveAndRestart.add(leaveOrRestartLine);
+                }
+
             }
         }
         this.isInsideWhile.pop();
@@ -167,7 +175,7 @@ public class TypeChecker extends ProjetoBaseListener {
 
     //control_instructions: LEAVE
     public void exitLeave(Projeto.LeaveContext ctx) {
-        if (!this.isInsideWhile.peek() && !this.isInsideSubBlock.peek()) {
+        if ( this.isInsideWhile.empty()  || this.isInsideSubBlock.empty()) {
             this.validated = false;
             this.semanticErrors++;
             System.err.println("The leave instruction declared in line " + ctx.start.getLine() + " needs to be inside the sub block of a cycle.");
@@ -177,7 +185,7 @@ public class TypeChecker extends ProjetoBaseListener {
 
     //control_instructions: RESTART
     public void exitRestart(Projeto.RestartContext ctx) {
-        if (!this.isInsideWhile.peek() && !this.isInsideSubBlock.peek()) {
+        if (this.isInsideWhile.empty()  || this.isInsideSubBlock.empty()) {
             this.validated = false;
             this.semanticErrors++;
             System.err.println("The restart instruction declared in line " + ctx.start.getLine() + " needs to be inside the sub block of a cycle.");

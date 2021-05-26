@@ -1,0 +1,26 @@
+## errado : have um leave antes do sleave final
+
+int lol(int size, float oi)
+{
+    int j;
+    {
+        while 2==2
+        do {
+            2+2;
+            j = 2;
+            {
+            {
+            {
+            leave;
+            }
+            }
+            }
+            leave;
+        }
+    }
+    return 2;
+}
+
+int alg( int n , <string> args){
+    return 2;
+}

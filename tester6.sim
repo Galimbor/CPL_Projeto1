@@ -1,0 +1,38 @@
+## errrado : 1 return esta errado
+
+int lol(int size, float oi)
+{
+    int j;
+    {
+        while 2==2
+        do {
+            2+2;
+            j = 2;
+            {
+            {
+            while 2==2
+            do{
+             leave;
+            }
+            {
+                while 2==2
+                do{
+                {
+                {
+                    return 2;
+                }
+                }
+                leave;
+                }
+                return 2;
+            }
+            }
+            }
+        }
+    }
+    return 2;
+}
+
+int alg( int size , <string> args){
+    return 2;
+}

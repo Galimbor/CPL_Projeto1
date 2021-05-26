@@ -1,0 +1,28 @@
+## errado : tem a ver com o return mas nao sei se faz mt sentido
+
+## facil de arranjar, basta colocar a funcao do returns a percorrer ciclos
+
+int lol(int size, float oi)
+{
+    int j;
+    {
+        while 2==2
+        do {
+            2+2;
+            j = 2;
+            {
+            {
+            {
+                return 2;
+            }
+            }
+            }
+            leave;
+        }
+    }
+    return 2;
+}
+
+int alg( int n , <string> args){
+    return 2;
+}

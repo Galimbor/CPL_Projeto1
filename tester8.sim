@@ -1,0 +1,23 @@
+int lol(int size, float oi)
+{
+    int j;
+    {
+        while 2==2
+        do {
+            2+2;
+            j = 2;
+            {
+            {
+            while 2==2
+            do{
+             leave; } { return 2; }
+            }
+            }
+        }
+    }
+    return 2;
+}
+
+int alg( int n , <string> args){
+    return 2;
+}

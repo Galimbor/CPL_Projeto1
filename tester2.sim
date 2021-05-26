@@ -1,0 +1,21 @@
+## ta certo
+
+int lol(int size, float oi)
+{
+    int j;
+    {
+        while 2==2
+        do {
+            2+2;
+            j = 2;
+            {
+            }
+            leave;
+        }
+    }
+    return 2;
+}
+
+int alg( int n , <string> args){
+    return 2;
+}

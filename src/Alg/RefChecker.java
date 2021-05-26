@@ -7,6 +7,8 @@ import Symbols.Symbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public class RefChecker extends ProjetoBaseListener {
@@ -18,7 +20,6 @@ public class RefChecker extends ProjetoBaseListener {
     public ParseTreeProperty<Symbol.PType> exprType;
     ParseTreeProperty<Operator.PType> opType = new ParseTreeProperty<>();
     private FunctionSymbol currentFunction;
-
 
     public RefChecker(ParseTreeProperty<Scope> scopes, ParseTreeProperty<Symbol.PType> exprType, ParseTreeProperty<FunctionSymbol> functions, boolean validated) {
         this.exprType = exprType;
@@ -119,9 +120,7 @@ public class RefChecker extends ProjetoBaseListener {
             int lastLine = countInstrutionsLinha(listOfVar_or_instructions);
             int linhaResult = checkResultLine(listOfVar_or_instructions);
             if (linhaResult == -1) {
-                this.validated = false;
-                this.semanticErrors++;
-                System.err.println("Return on central block of function '" + this.currentFunction.name + "' is not the last instruction on function: " + this.currentFunction.name);
+//                Do nothing
 
             } else if (this.currentFunction.hasIns && lastLine != -1) {
                 if (linhaResult < lastLine) {
@@ -155,9 +154,7 @@ public class RefChecker extends ProjetoBaseListener {
             int lastLine = countInstrutionsLinha(listOfVar_or_instructions);
             int linhaResult = checkResultLine(listOfVar_or_instructions);
             if (linhaResult == -1) {
-                this.validated = false;
-                this.semanticErrors++;
-                System.err.println("Return on central block of function '" + this.currentFunction.name + "' is not the last instruction on function: " + this.currentFunction.name);
+//                Do nothing
 
             } else if (this.currentFunction.hasIns && lastLine != -1) {
                 if (linhaResult < lastLine) {
@@ -191,9 +188,7 @@ public class RefChecker extends ProjetoBaseListener {
             int lastLine = countInstrutionsLinha(listOfVar_or_instructions);
             int linhaResult = checkResultLine(listOfVar_or_instructions);
             if (linhaResult == -1) {
-                this.validated = false;
-                this.semanticErrors++;
-                System.err.println("Return on central block of function '" + this.currentFunction.name + "' is not the last instruction on function: " + this.currentFunction.name);
+//          Do nothing
 
             } else if (this.currentFunction.hasIns && lastLine != -1) {
                 if (linhaResult < lastLine) {
@@ -816,7 +811,7 @@ public class RefChecker extends ProjetoBaseListener {
 
 
     //gets index of first 'result' in list of instructions or variables
-    public int checkResultLine(List<Projeto.Var_or_instructionContext> listOfVarsOrIns) {
+public int checkResultLine(List<Projeto.Var_or_instructionContext> listOfVarsOrIns) {
         int line = -1;
         for (Projeto.Var_or_instructionContext listOfVarsOrIn : listOfVarsOrIns) {
             if (listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().subblock_instruction() != null) {
