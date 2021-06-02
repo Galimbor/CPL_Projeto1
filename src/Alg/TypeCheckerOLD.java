@@ -1,47 +1,37 @@
 package Alg;
 
-import Symbols.*;
+import Symbols.FunctionSymbolOLD;
+import Symbols.ScopeOLD;
+import Symbols.SymbolOLD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
 import java.util.HashSet;
 import java.util.Stack;
 
-public class TypeChecker extends ProjetoBaseListener {
+public class TypeCheckerOLD extends ProjetoBaseListener {
 
-    public Scope globalScope;
-    public Scope currentScope;
+    public ScopeOLD globalScopeOLD;
+    public ScopeOLD currentScopeOLD;
     public int semanticErrors;
     public boolean validated;
     public boolean haveAlg;
     public Stack<Boolean> isInsideWhile = new Stack<>();
     public Stack<Boolean> isInsideSubBlock = new Stack<>();
 
-    public ParseTreeProperty<Type> exprType = new ParseTreeProperty<>();
-    public ParseTreeProperty<Scope> scopes = new ParseTreeProperty<>();
-    public ParseTreeProperty<FunctionSymbol> functions = new ParseTreeProperty<>();
-    private FunctionSymbol currentFunction;
+    public ParseTreeProperty<SymbolOLD.PType> exprType = new ParseTreeProperty<>();
+    public ParseTreeProperty<ScopeOLD> scopes = new ParseTreeProperty<>();
+    public ParseTreeProperty<FunctionSymbolOLD> functions = new ParseTreeProperty<>();
+    private FunctionSymbolOLD currentFunction;
     private HashSet<Integer> leaveAndRestart = new HashSet<>();
-
-
-//    Just for phase4
-    public void exitEveryRule(ParserRuleContext ctx)
-    {
-        if(this.scopes.get(ctx)==null)
-        {
-            this.scopes.put(ctx,this.currentScope);
-        }
-    }
-
-
 
     //program :
     //        EOF {notifyErrorListeners("Program must have at least one declaration");}
     //    |   declaration+ EOF;
     public void enterProgram(Projeto.ProgramContext ctx) {
-        globalScope = new Scope(null);
-        currentScope = globalScope;
-        scopes.put(ctx, currentScope);
+        globalScopeOLD = new ScopeOLD(null);
+        currentScopeOLD = globalScopeOLD;
+        scopes.put(ctx, currentScopeOLD);
         this.semanticErrors = 0;
         this.validated = true;
         haveAlg = false;
@@ -58,28 +48,28 @@ public class TypeChecker extends ProjetoBaseListener {
     //var_declaration_simple:type IDENTIFIER ((COMMA IDENTIFIER)+)* ;
     public void exitVar_declaration_simple(Projeto.Var_declaration_simpleContext ctx) {
         for (int i = 0; i < ctx.IDENTIFIER().size(); i++) {
-            defineSymbol(ctx, new Symbol(new Type(ctx.type().start.getText()), ctx.IDENTIFIER().get(i).getText()));
+            defineSymbol(ctx, new SymbolOLD(ctx.type().start.getText(), ctx.IDENTIFIER().get(i).getText()));
         }
     }
 
 
     //id_invocation : IDENTIFIER LPAREN list_expressions? RPAREN;
     public void enterId_invocation(Projeto.Id_invocationContext ctx) {
-        this.scopes.put(ctx, this.currentScope);
+        this.scopes.put(ctx, this.currentScopeOLD);
     }
 
 
     // special_function : INT ALG LPAREN INT N COMMA STRING_POINTER ARGS RPAREN body;
     public void enterSpecial_function(Projeto.Special_functionContext ctx) {
         haveAlg = true;
-        FunctionSymbol f;
+        FunctionSymbolOLD f;
         String functionName = ctx.ALG().getText();
         String type = "int";
-        f = new FunctionSymbol(new Type(type), functionName, this.currentScope);
+        f = new FunctionSymbolOLD(type, functionName);
         if (defineSymbol(ctx, f)) {
             this.currentFunction = f;
-            this.currentScope = new Scope(f.scope);
-            scopes.put(ctx, this.currentScope);
+            this.currentScopeOLD = new ScopeOLD(f.scopeOLD);
+            scopes.put(ctx, this.currentScopeOLD);
         }
     }
 
@@ -88,7 +78,7 @@ public class TypeChecker extends ProjetoBaseListener {
     public void exitSpecial_function(Projeto.Special_functionContext ctx) {
         this.functions.put(ctx.ALG(), this.currentFunction);
         this.currentFunction = null;
-        currentScope = currentScope.getParentScope();
+        currentScopeOLD = currentScopeOLD.getParentScope();
     }
 
 
@@ -96,11 +86,11 @@ public class TypeChecker extends ProjetoBaseListener {
     public void enterFunction_normal(Projeto.Function_normalContext ctx) {
         String functionName = ctx.IDENTIFIER().getText();
         String type = ctx.function_type().start.getText();
-        FunctionSymbol f = new FunctionSymbol(new Type(type), functionName, this.currentScope);
+        FunctionSymbolOLD f = new FunctionSymbolOLD(type, functionName);
         if (defineSymbol(ctx, f)) {
             this.currentFunction = f;
-            this.currentScope = new Scope(f.scope);
-            scopes.put(ctx, currentScope);
+            this.currentScopeOLD = new ScopeOLD(f.scopeOLD);
+            scopes.put(ctx, currentScopeOLD);
         }
     }
 
@@ -108,7 +98,7 @@ public class TypeChecker extends ProjetoBaseListener {
     public void exitFunction_normal(Projeto.Function_normalContext ctx) {
         this.functions.put(ctx.IDENTIFIER(), this.currentFunction);
         this.currentFunction = null;
-        currentScope = currentScope.getParentScope();
+        currentScopeOLD = currentScopeOLD.getParentScope();
     }
 
     //function_arg: function_arg IDENTIFIER
@@ -116,7 +106,7 @@ public class TypeChecker extends ProjetoBaseListener {
         String type = ctx.type().start.getText();
         String name = ctx.IDENTIFIER().getText();
 
-        Symbol parameter = new Symbol(new Type(type), name);
+        SymbolOLD parameter = new SymbolOLD(type, name);
         if (defineSymbol(ctx, parameter) && this.currentFunction != null) {
             this.currentFunction.arguments.add(parameter);
         }
@@ -279,14 +269,14 @@ public class TypeChecker extends ProjetoBaseListener {
 
 
     //defines symbol in the current scopeOLD
-    private boolean defineSymbol(ParserRuleContext ctx, Symbol s) {
-        if (!this.currentScope.define(s)) {
+    private boolean defineSymbol(ParserRuleContext ctx, SymbolOLD s) {
+        if (!this.currentScopeOLD.define(s)) {
             this.semanticErrors++;
             this.validated = false;
             System.err.println("Redefining previously defined variable '" + s.name + "' in line " + ctx.start.getLine());
             return false;
         }
-        this.scopes.put(ctx, currentScope);
+        this.scopes.put(ctx, currentScopeOLD);
         return true;
     }
 }

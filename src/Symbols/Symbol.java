@@ -1,91 +1,58 @@
 package Symbols;
 
-import java.util.Locale;
-
 //classe apenas com campos
 public class Symbol {
 
-    public enum PType {
-        INT,
-        FLOAT,
-        VOID,
-        ERROR,
-        INT_POINTER,
-        FLOAT_POINTER,
-        STRING_POINTER,
-        BOOL_POINTER,
-        NULL_POINTER,
-        STRING,
-        BOOL
-    }
-
-    public PType type;
-    public String name;
+    public final Type type;
+    public final String name;
+    public int width;
+    public int offset;
     public Scope scope;
+    public boolean isValueKnown;
+    public boolean isWidthKnown;
+    public Object value;
 
     //usamos um enumerado para guardar o tipo, porque é mais eficiente nas comparações de tipos
-    public Symbol(String type, String name) {
-        if (type.equals("<int>"))
-            this.type = PType.INT_POINTER;
-        else if (type.equals("<float>"))
-            this.type = PType.FLOAT_POINTER;
-        else if (type.equals("<string>"))
-            this.type = PType.STRING_POINTER;
-        else if (type.equals("<bool>"))
-            this.type = PType.BOOL_POINTER;
-        else if (type.equals("<void>"))
-            this.type = PType.NULL_POINTER;
-        else {
-            this.type = PType.valueOf(type.toUpperCase(Locale.ROOT));
-        }
+    public Symbol(Type type, String name)
+    {
+        this.type = type;
         this.name = name;
-    }
-    public String toString() {
-        return name + ":" + this.type                 ;
+        this.width = type.getWidth();
+
+        isValueKnown = false;
+        //by default, we know the size needed to store all pointers, and all primitive types
+        //except for strings, which need to be dynamically allocated
+        if(!type.isPointer() && type.getPrimitiveType() == Type.PType.STRING)
+        {
+            this.isWidthKnown = false;
+        }
+        else this.isWidthKnown = true;
+
+        //this.offset = offset;
     }
 
-
-    public static boolean areBothTypesEqual(Symbol.PType type1, Symbol.PType type2)
+    public Symbol(Type type, String name, Object value)
     {
-        return type1 == type2;
+        this.type = type;
+        this.name = name;
+        this.width = type.getWidth();
+        this.isValueKnown = true;
+        this.isWidthKnown = true;
+        this.value = value;
+
+        //this.offset = offset;
     }
 
-
-    public static boolean isAPointer(Symbol.PType type)
+    /*public Symbol(Type type, String name, int offset)
     {
-        return isAPrimitivePointer(type) || type == PType.NULL_POINTER;
-    }
+        this.type = type;
+        this.name = name;
+        this.width = type.getWidth();
+        this.offset = offset;
+    }*/
 
-    public static boolean isAPrimitivePointer(Symbol.PType type)
+    public String toString()
     {
-        return type == PType.BOOL_POINTER || type == PType.FLOAT_POINTER || type == PType.INT_POINTER
-                || type == PType.STRING_POINTER ;
+        return name + ":" + this.type;
     }
-
-
-    public static boolean isNumeric(Symbol.PType type)
-    {
-        return type == PType.FLOAT || type == PType.INT;
-    }
-
-
-    public static boolean isPrimitive(Symbol.PType e1)
-    {
-        return e1 == Symbol.PType.FLOAT ||
-                e1 == Symbol.PType.BOOL ||
-                e1 == Symbol.PType.STRING ||
-                e1 == Symbol.PType.INT;
-    }
-
-
-    public static boolean isCastingPossible(Symbol.PType e1, Symbol.PType e2)
-    {   boolean result = false;
-        if(e1 == PType.FLOAT && e2 == PType.INT)
-            result = true;
-        else if(Symbol.isAPointer(e1) && e2 == PType.NULL_POINTER)
-            result = true;
-        return result;
-    }
-
-
 }

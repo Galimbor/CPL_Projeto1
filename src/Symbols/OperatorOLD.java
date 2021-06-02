@@ -1,6 +1,6 @@
 package Symbols;
 
-public class Operator {
+public class OperatorOLD {
 
 
     public enum PType {
@@ -21,11 +21,11 @@ public class Operator {
 
 
 
-    public static boolean isSimpleOperator(Operator.PType type){
+    public static boolean isSimpleOperator(OperatorOLD.PType type){
         return type == PType.LESSER || type == PType.GREATER || type == PType.GREATEQ || type == PType.LESSEQ;
     }
 
-    public static boolean isEQualOperator(Operator.PType type)
+    public static boolean isEQualOperator(OperatorOLD.PType type)
     {
         return type == PType.EQUALS || type == PType.NOTEQUALS;
     }

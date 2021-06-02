@@ -40,7 +40,7 @@ NULL_POINTER: '<' VOID '>';
 
 /* WHITESPACE */
 NEWLINE : '\n' -> skip;
-CARRIAGE_RETURN: '\r';
+CARRIAGE_RETURN: '\r' -> skip;
 BLANK: ' ' ->skip;
 TAB: '\t';
 

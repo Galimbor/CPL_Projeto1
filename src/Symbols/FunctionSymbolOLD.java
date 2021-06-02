@@ -3,20 +3,19 @@ package Symbols;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FunctionSymbol extends Symbol {
+public class FunctionSymbolOLD extends SymbolOLD {
 
-    public List<Symbol> arguments;
-    public Scope functionScope;
+    public List<SymbolOLD> arguments;
     public boolean hasIns;
     public boolean hasReturn;
 
-    public FunctionSymbol(Type type, String functionName, Scope functionScope)
+
+    public FunctionSymbolOLD(String type, String functionName)
     {
         super(type,functionName);
-        this.arguments = new ArrayList<Symbol>();
-        this.functionScope = functionScope;
         hasIns = false;
         hasReturn = false;
+        this.arguments = new ArrayList<>();
     }
 
     public String toString()

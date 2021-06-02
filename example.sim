@@ -48,8 +48,7 @@ bool letsgo =  test == move;
 bool letgo = move == move2;
 bool let = xpto == move;
 bool le = xpto == xpto;
-}
-int ricardo = 2;
+}int ricardo = 2;
 float laoul = ricardo;
 
 void returnvoid()

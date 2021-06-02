@@ -1,26 +1,47 @@
 package ualg.com;
 
-import Alg.Projeto;
-import Alg.ProjetoLexer;
-import Alg.RefChecker;
-import Alg.TypeChecker;
+//import Alg.CodeGen;
+import Alg.*;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+
 
 public class Main {
     public static void main(String[] args) {
+        String sourceFile;
+        String outputFile;
         try {
-            ProjetoLexer simpleLexer = new ProjetoLexer(CharStreams.fromFileName("tester9.sim"));
-            Projeto simpleParser = new Projeto(new CommonTokenStream(simpleLexer));
-            ParseTree tree = simpleParser.program();
+            if(args.length == 0)
+            {
+                System.err.println("filename required for compilation!");
+                System.exit(1);
+            }
+            if(args.length > 1)
+            {
+                outputFile = args[1];
+            }
+            else
+            {
+
+                outputFile = args[0].split("\\.")[0] + ".tac";
+            }
+            sourceFile = args[0];
+
+            ProjetoLexer lexer = new ProjetoLexer(CharStreams.fromFileName("T3_example.alg"));
+            Projeto parser = new Projeto(new CommonTokenStream(lexer));
+            ParseTree tree = parser.program();
             System.out.println("syntatic parsing finished");
+
             // create a standard ANTLR parse tree walker
             ParseTreeWalker walker = new ParseTreeWalker();
             // create listener then feed to walker
+//            TypeChecker listener = new TypeChecker();
             System.out.println("Type checking...");
             TypeChecker type_listener = new TypeChecker();
             walker.walk(type_listener, tree);
@@ -32,8 +53,33 @@ public class Main {
                 System.exit(1);
             } else
                 System.out.println("No errors found!");
-        } catch (IOException e) {
+
+
+            System.out.println("Generating TAC code");
+
+//            give the scopes created by the typeChecker to the codeGenerator
+            CodeGen codeGen = new CodeGen(ref_listener.scopes);
+            codeGen.visit(tree);
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+            for(String s : codeGen.code)
+            {
+                if(!s.endsWith(":"))
+                {
+                    writer.write("\t");
+                }
+                writer.write(s);
+                writer.newLine();
+            }
+            writer.flush();
+            writer.close();
+
+        }
+        catch(IOException e)
+        {
             e.printStackTrace();
+            System.exit(1);
         }
     }
 }
+

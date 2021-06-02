@@ -1,25 +1,28 @@
 package Alg;
 
-import Symbols.*;
+import Symbols.FunctionSymbolOLD;
+import Symbols.OperatorOLD;
+import Symbols.ScopeOLD;
+import Symbols.SymbolOLD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
 import java.util.List;
 
-public class RefChecker extends ProjetoBaseListener {
-    public Scope currentScope;
+public class RefCheckerOLD extends ProjetoBaseListener {
+    public ScopeOLD currentScopeOLD;
     public int semanticErrors;
     public boolean validated;
-    public ParseTreeProperty<Scope> scopes;
-    public ParseTreeProperty<FunctionSymbol> functions;
-    public ParseTreeProperty<Type> exprType;
+    public ParseTreeProperty<ScopeOLD> scopes;
+    public ParseTreeProperty<FunctionSymbolOLD> functions;
+    public ParseTreeProperty<SymbolOLD.PType> exprType;
     ParseTreeProperty<OperatorOLD.PType> opType = new ParseTreeProperty<>();
-    private FunctionSymbol currentFunction;
-
-    public ParseTreeProperty<Boolean> pointerExtr = new ParseTreeProperty<>();
+    private FunctionSymbolOLD currentFunction;
 
 
-    public RefChecker(ParseTreeProperty<Scope> scopes, ParseTreeProperty<Type> exprType, ParseTreeProperty<FunctionSymbol> functions, boolean validated) {
+
+
+    public RefCheckerOLD(ParseTreeProperty<ScopeOLD> scopes, ParseTreeProperty<SymbolOLD.PType> exprType, ParseTreeProperty<FunctionSymbolOLD> functions, boolean validated) {
         this.exprType = exprType;
         this.scopes = scopes;
         this.functions = functions;
@@ -30,47 +33,38 @@ public class RefChecker extends ProjetoBaseListener {
     //        EOF {notifyErrorListeners("Program must have at least one declaration");}
     //    |   declaration+ EOF;
     public void enterProgram(Projeto.ProgramContext ctx) {
-        currentScope = this.scopes.get(ctx);
+        currentScopeOLD = this.scopes.get(ctx);
     }
 
 
     //id_invocation : IDENTIFIER LPAREN list_expressions? RPAREN;
     public void exitId_invocation(Projeto.Id_invocationContext ctx) {
         String functionName = ctx.IDENTIFIER().getText();
-        Symbol s = scopes.get(ctx).resolve(functionName);
+        SymbolOLD s = scopes.get(ctx).resolve(functionName);
         if (s == null) {
             System.err.println("Undefined function '" + functionName + "' on line " + ctx.IDENTIFIER().getSymbol().getLine() + " position: " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
             this.validated = false;
             this.semanticErrors++;
         }
-        if (!(s instanceof FunctionSymbol)) {
+        if (!(s instanceof FunctionSymbolOLD)) {
             System.err.println("Using var symbol '" + functionName + "' as function on line " + ctx.IDENTIFIER().getSymbol().getLine() + " position: " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
             this.validated = false;
             this.semanticErrors++;
         } else {
-            FunctionSymbol fs = (FunctionSymbol) s;
+            FunctionSymbolOLD fs = (FunctionSymbolOLD) s;
             if (ctx.list_expressions() != null && fs.arguments.size() == ctx.list_expressions().expression().size()) {
                 for (int i = 0; i < ctx.list_expressions().expression().size(); i++) {
-                    Type calledArg = this.exprType.get(ctx.list_expressions().expression().get(i));
-                    Type declaredArg = fs.arguments.get(i).type;
-                    if (Type.isConvertibleTo( calledArg, declaredArg)) continue;
+                    SymbolOLD.PType calledArg = this.exprType.get(ctx.list_expressions().expression().get(i));
+                    SymbolOLD.PType declaredArg = fs.arguments.get(i).type;
+                    if (SymbolOLD.isCastingPossible(declaredArg, calledArg)) continue;
                     if (!calledArg.equals(declaredArg)) {
                         this.validated = false;
                         this.semanticErrors++;
-                        this.exprType.put(ctx, new Type(Type.PType.ERROR));
                         System.err.println("Arguments of function '" + functionName + "' do not match the arguments " +
                                 "declared in the function declaration on line " + ctx.start.getLine());
                         return;
                     }
                 }
-            }
-            else if (ctx.list_expressions() != null) {
-                this.validated = false;
-                this.semanticErrors++;
-                this.exprType.put(ctx, new Type(Type.PType.ERROR));
-                System.err.println("Number of arguments of function '" + functionName + "' do not match the number of arguments " +
-                        "declared in the function declaration on line " + ctx.start.getLine());
-                return;
             }
             this.exprType.put(ctx, s.type);
         }
@@ -78,8 +72,8 @@ public class RefChecker extends ProjetoBaseListener {
 
     // special_function : INT ALG LPAREN INT N COMMA STRING_POINTER ARGS RPAREN body;
     public void enterSpecial_function(Projeto.Special_functionContext ctx) {
-        this.currentFunction = (FunctionSymbol) this.scopes.get(ctx).resolve(ctx.ALG().getText());
-        this.currentScope = this.scopes.get(ctx);
+        this.currentFunction = (FunctionSymbolOLD) this.scopes.get(ctx).resolve(ctx.ALG().getText());
+        this.currentScopeOLD = this.scopes.get(ctx);
     }
 
 
@@ -91,14 +85,14 @@ public class RefChecker extends ProjetoBaseListener {
             this.semanticErrors++;
         }
         this.currentFunction = null;
-        this.currentScope = this.currentScope.getParentScope();
+        this.currentScopeOLD = this.currentScopeOLD.getParentScope();
     }
 
 
     // function_normal: function_type IDENTIFIER LPAREN function_args* RPAREN body;
     public void enterFunction_normal(Projeto.Function_normalContext ctx) {
-        this.currentFunction = (FunctionSymbol) this.scopes.get(ctx).resolve(ctx.IDENTIFIER().getText());
-        this.currentScope = this.scopes.get(ctx);
+        this.currentFunction = (FunctionSymbolOLD) this.scopes.get(ctx).resolve(ctx.IDENTIFIER().getText());
+        this.currentScopeOLD = this.scopes.get(ctx);
     }
 
     // function_normal: function_type IDENTIFIER LPAREN function_args* RPAREN body;
@@ -109,7 +103,7 @@ public class RefChecker extends ProjetoBaseListener {
             System.err.println("Function '" + this.currentFunction.name + "' has to have at least one instruction" + ". Line: " + ctx.start.getLine());
         }
         this.currentFunction = null;
-        this.currentScope = this.currentScope.getParentScope();
+        this.currentScopeOLD = this.currentScopeOLD.getParentScope();
     }
 
 
@@ -117,7 +111,13 @@ public class RefChecker extends ProjetoBaseListener {
     public void exitPrologue(Projeto.PrologueContext ctx) {
         List<Projeto.Var_or_instructionContext> listOfVar_or_instructions = ctx.block().var_or_instruction();
 
-        if (!this.currentFunction.type.equals( new Type(Type.PType.VOID))) {
+        if (this.currentFunction.type != SymbolOLD.PType.VOID) {
+            if (!this.currentFunction.hasReturn) {
+                this.validated = false;
+                this.semanticErrors++;
+                System.err.println("Missing return statement. Line: " + ctx.start.getLine());
+                return;
+            }
             int lastLine = countInstrutionsLinha(listOfVar_or_instructions);
             int linhaResult = checkResultLine(listOfVar_or_instructions);
             if (linhaResult == -1) {
@@ -145,7 +145,7 @@ public class RefChecker extends ProjetoBaseListener {
     public void exitCentral(Projeto.CentralContext ctx) {
         List<Projeto.Var_or_instructionContext> listOfVar_or_instructions = ctx.block().var_or_instruction();
 
-        if (!this.currentFunction.type.equals(new Type(Type.PType.VOID))) {
+        if (this.currentFunction.type != SymbolOLD.PType.VOID) {
             if (!this.currentFunction.hasReturn) {
                 this.validated = false;
                 this.semanticErrors++;
@@ -179,7 +179,13 @@ public class RefChecker extends ProjetoBaseListener {
     // epilogue: EXTRACT block;
     public void exitEpilogue(Projeto.EpilogueContext ctx) {
         List<Projeto.Var_or_instructionContext> listOfVar_or_instructions = ctx.block().var_or_instruction();
-        if (!this.currentFunction.type.equals(new Type(Type.PType.VOID))) {
+        if (this.currentFunction.type != SymbolOLD.PType.VOID) {
+            if (!this.currentFunction.hasReturn) {
+                this.validated = false;
+                this.semanticErrors++;
+                System.err.println("Missing return statement. Line: " + ctx.start.getLine());
+                return;
+            }
             int lastLine = countInstrutionsLinha(listOfVar_or_instructions);
             int linhaResult = checkResultLine(listOfVar_or_instructions);
             if (linhaResult == -1) {
@@ -208,16 +214,16 @@ public class RefChecker extends ProjetoBaseListener {
     public void exitReturn(Projeto.ReturnContext ctx) {
         this.currentFunction.hasIns = true;
         this.currentFunction.hasReturn = true;
-        Type expr = exprType.get(ctx.expression());
+        SymbolOLD.PType expr = exprType.get(ctx.expression());
         if (this.currentFunction != null) {
-            if (this.currentFunction.type.equals(new Type(Type.PType.VOID))) {
+            if (this.currentFunction.type == SymbolOLD.PType.VOID) {
                 if (ctx.expression() != null) {
                     this.validated = false;
                     this.semanticErrors++;
                     System.err.println("Unexpected return value on line " + ctx.start.getLine());
                 }
             } else {
-                if ( Type.isConvertibleTo(expr, this.currentFunction.type)) {
+                if (SymbolOLD.isCastingPossible(this.currentFunction.type, expr)) {
                     //do nothing
                 } else if (this.currentFunction.type != expr) {
                     this.validated = false;
@@ -235,66 +241,66 @@ public class RefChecker extends ProjetoBaseListener {
         String name = ctx.IDENTIFIER().getText();
 
 
-        Symbol symbol = new Symbol(new Type(stype), name);
-        Type expression = exprType.get(ctx.expression());
-        if (Type.isConvertibleTo(expression, symbol.type)) {
+        SymbolOLD symbolOLD = new SymbolOLD(stype, name);
+        SymbolOLD.PType expression = exprType.get(ctx.expression());
+        if (SymbolOLD.isCastingPossible(symbolOLD.type, expression)) {
             //do nothing
-        } else if (!(symbol.type == expression)) {
+        } else if (!(symbolOLD.type == expression)) {
             this.validated = false;
             semanticErrors++;
-            System.err.println("Invalid variable type " + symbol.type + " of variable " + name + " since the right side value is of type " + expression + ", Line: " + ctx.start.getLine());
+            System.err.println("Invalid variable type " + symbolOLD.type + " of variable " + name + " since the right side value is of type " + expression + ", Line: " + ctx.start.getLine());
         }
-        defineSymbol(ctx, new Symbol(new Type(ctx.type().start.getText()), ctx.IDENTIFIER().getText()));
+        defineSymbol(ctx, new SymbolOLD(ctx.type().start.getText(), ctx.IDENTIFIER().getText()));
     }
 
     //alot of expressions!
     public void exitExpression(Projeto.ExpressionContext ctx) {
-        Type type = exprType.get(ctx.expression_evaluation());
+        SymbolOLD.PType type = exprType.get(ctx.expression_evaluation());
         exprType.put(ctx, type);
     }
 
 
     //expression_evaluation:  expression_evaluation comparator_OTHER expression_evaluation
     public void exitCompOther(Projeto.CompOtherContext ctx) {
-        Type e1 = exprType.get(ctx.expression_evaluation(0));
-        Type e2 = exprType.get(ctx.expression_evaluation(1));
+        SymbolOLD.PType e1 = exprType.get(ctx.expression_evaluation(0));
+        SymbolOLD.PType e2 = exprType.get(ctx.expression_evaluation(1));
 
         OperatorOLD.PType op = opType.get(ctx.comparators());
         if (OperatorOLD.isSimpleOperator(op)) {
-            if (Type.isNumeric(e1) && Type.isNumeric(e2)) {
-                exprType.put(ctx, new Type(Type.PType.BOOL));
+            if (SymbolOLD.isNumeric(e1) && SymbolOLD.isNumeric(e2)) {
+                exprType.put(ctx, SymbolOLD.PType.BOOL);
             } else {
                 this.validated = false;
                 semanticErrors++;
-                exprType.put(ctx, new Type(Type.PType.ERROR));
+                exprType.put(ctx, SymbolOLD.PType.ERROR);
                 System.err.println("Operator '" + ctx.comparators().getText() + "' cannot be applied to '" + e1 + "', '" + e2 + "' on line " + ctx.start.getLine());
             }
         } else if (OperatorOLD.isEQualOperator(op)) {
-            if (Type.isPrimitive(e1) && Type.isPrimitive(e2)) {
-                if (e1.equals(e2)) {
-                    exprType.put(ctx, new Type(Type.PType.BOOL));
+            if (SymbolOLD.isPrimitive(e1) && SymbolOLD.isPrimitive(e2)) {
+                if (e1 == e2) {
+                    exprType.put(ctx, SymbolOLD.PType.BOOL);
                 } else {
                     this.validated = false;
                     semanticErrors++;
-                    exprType.put(ctx, new Type(Type.PType.ERROR));
+                    exprType.put(ctx, SymbolOLD.PType.ERROR);
                     System.err.println("Operator '" + ctx.comparators().getText() + "' cannot be applied to '" + e1 + "', '" + e2 + "' on line " + ctx.start.getLine());
                 }
-            } else if (e1.isPointer() && e2.isPointer()) {
-                if ((e1.isPointer() && e2.isPointer()) && (e1.getPrimitiveType() == Type.PType.VOID && e2.getPrimitiveType() != Type.PType.VOID) || (e1.getPrimitiveType() != Type.PType.VOID && e2.getPrimitiveType() == Type.PType.VOID))
-                    exprType.put(ctx, new Type(Type.PType.BOOL));
-                else if (e1.equals( e2)) {
-                    exprType.put(ctx, new Type(Type.PType.BOOL));
+            } else if (SymbolOLD.isAPointer(e1) && SymbolOLD.isAPointer(e2)) {
+                if ((e1 == SymbolOLD.PType.NULL_POINTER && e2 != SymbolOLD.PType.NULL_POINTER) || (e1 != SymbolOLD.PType.NULL_POINTER && e2 == SymbolOLD.PType.NULL_POINTER))
+                    exprType.put(ctx, SymbolOLD.PType.BOOL);
+                else if (SymbolOLD.areBothTypesEqual(e1, e2)) {
+                    exprType.put(ctx, SymbolOLD.PType.BOOL);
                 } else {
                     this.validated = false;
                     semanticErrors++;
-                    exprType.put(ctx, new Type(Type.PType.ERROR));
+                    exprType.put(ctx, SymbolOLD.PType.ERROR);
                     System.err.println("Operator '" + ctx.comparators().getText() + "' cannot be applied to '" + e1 + "', '" + e2 + "' on line " + ctx.start.getLine());
                 }
             }
         } else {
             this.validated = false;
             semanticErrors++;
-            exprType.put(ctx, new Type(Type.PType.ERROR));
+            exprType.put(ctx, SymbolOLD.PType.ERROR);
             System.err.println("Operator '" + ctx.comparators().getText() + "' cannot be applied to '" + e1 + "' , '" + e2 + "' on line " + ctx.start.getLine());
         }
 
@@ -303,15 +309,15 @@ public class RefChecker extends ProjetoBaseListener {
 
     //     expression_evaluation:  expression_evaluation comparator_AND expression_evaluation
     public void exitCompAnd(Projeto.CompAndContext ctx) {
-        Type e1 = exprType.get(ctx.expression_evaluation(0));
-        Type e2 = exprType.get(ctx.expression_evaluation(1));
-        if (e1.getPrimitiveType() == Type.PType.BOOL && e2.getPrimitiveType() == Type.PType.BOOL) {
-            exprType.put(ctx, new Type(Type.PType.BOOL));
+        SymbolOLD.PType e1 = exprType.get(ctx.expression_evaluation(0));
+        SymbolOLD.PType e2 = exprType.get(ctx.expression_evaluation(1));
+        if (e1 == SymbolOLD.PType.BOOL && e2 == SymbolOLD.PType.BOOL) {
+            exprType.put(ctx, SymbolOLD.PType.BOOL);
         } else {
             System.err.println("Operator '" + ctx.comparator_AND().getText() + "' cannot be applied to '" + e1 + "' , '" + e2 + "' on line " + ctx.start.getLine());
             this.validated = false;
             semanticErrors++;
-            exprType.put(ctx, new Type(Type.PType.ERROR));
+            exprType.put(ctx, SymbolOLD.PType.ERROR);
         }
 
     }
@@ -319,16 +325,16 @@ public class RefChecker extends ProjetoBaseListener {
 
     //     expression_evaluation:  expression_evaluation comparator_OR expression_evaluation
     public void exitCompOr(Projeto.CompOrContext ctx) {
-        Type e1 = exprType.get(ctx.expression_evaluation(0));
-        Type e2 = exprType.get(ctx.expression_evaluation(1));
+        SymbolOLD.PType e1 = exprType.get(ctx.expression_evaluation(0));
+        SymbolOLD.PType e2 = exprType.get(ctx.expression_evaluation(1));
 
-        if (e1.getPrimitiveType() == Type.PType.BOOL && e2.getPrimitiveType() == Type.PType.BOOL) {
-            exprType.put(ctx, new Type(Type.PType.BOOL));
+        if (e1 == SymbolOLD.PType.BOOL && e2 == SymbolOLD.PType.BOOL) {
+            exprType.put(ctx, SymbolOLD.PType.BOOL);
         } else {
             System.err.println("Operator '" + ctx.comparator_OR().getText() + "' cannot be applied to '" + e1 + "', '" + e2 + "' on line " + ctx.start.getLine());
             this.validated = false;
             semanticErrors++;
-            exprType.put(ctx, new Type(Type.PType.ERROR));
+            exprType.put(ctx, SymbolOLD.PType.ERROR);
         }
     }
 
@@ -337,23 +343,21 @@ public class RefChecker extends ProjetoBaseListener {
     public void exitMemDecl(Projeto.MemDeclContext ctx) {
         String stype = ctx.type().start.getText();
         String name = ctx.IDENTIFIER().getText();
-        Symbol type = new Symbol(new Type(stype), name);
+        SymbolOLD type = new SymbolOLD(stype, name);
 
-
-        Type expression = exprType.get(ctx.expression());
-        if (!Type.isAPrimitivePointer(type.type)) {
+        if (SymbolOLD.isAPrimitivePointer(type.type)) {
+            SymbolOLD.PType expression = exprType.get(ctx.expression());
+            if (expression != SymbolOLD.PType.INT) {
+                this.validated = false;
+                semanticErrors++;
+                System.err.println("Expression should be of type int but is of type '" + expression + "' on line " + ctx.start.getLine());
+            }
+        } else {
             this.validated = false;
             semanticErrors++;
-            System.err.println("Invalid variable type '" + stype + "' of variable '" + name + "', pointer must be of a primitive type, on line " + ctx.start.getLine());
+            System.err.println("Invalid variable type '" + stype + "' of variable '" + name + "' on line " + ctx.start.getLine());
         }
-
-        if (expression.getPrimitiveType() != Type.PType.INT) {
-            this.validated = false;
-            semanticErrors++;
-            System.err.println("Incompatible type " + type.type + "[" + expression + "]" + " on line " + ctx.start.getLine());
-        }
-
-        defineSymbol(ctx, new Symbol(new Type(ctx.type().start.getText()), ctx.IDENTIFIER().getText()));
+        defineSymbol(ctx, new SymbolOLD(ctx.type().start.getText(), ctx.IDENTIFIER().getText()));
     }
 
 
@@ -362,40 +366,44 @@ public class RefChecker extends ProjetoBaseListener {
         OperatorOLD.PType op = opType.get(ctx.binary_op_MUL_DIV_REM());
 
         if (op == OperatorOLD.PType.MUL | op == OperatorOLD.PType.DIV) {
-            Type e1 = exprType.get(ctx.expression_evaluation(0));
-            Type e2 = exprType.get(ctx.expression_evaluation(1));
+            SymbolOLD.PType e1 = exprType.get(ctx.expression_evaluation(0));
+            SymbolOLD.PType e2 = exprType.get(ctx.expression_evaluation(1));
 
-
-            if(!Type.isNumeric(e1) || !Type.isNumeric(e2))
-            {
-                exprType.put(ctx, new Type(Type.PType.ERROR));
-                this.validated = false;
-                semanticErrors++;
-                System.err.println("Invalid types for '*' or '/' operator '" + e1.toString() + "', '" + e2.toString() + "' on line " + ctx.start.getLine());
-            }
-            else  {
-                exprType.put(ctx, Type.getMaxType(e1, e2));
-            }
-        }
-        else if (op == OperatorOLD.PType.REM) {
-            Type e1 = exprType.get(ctx.expression_evaluation(0));
-            Type e2 = exprType.get(ctx.expression_evaluation(1));
-
-            if (e1.isError() || e2.isError())
-                exprType.put(ctx, new Type(Type.PType.ERROR));
-
-            if (e1.getPrimitiveType() == Type.PType.INT && e2.getPrimitiveType() == Type.PType.INT)
-                exprType.put(ctx, new Type(Type.PType.INT));
+            if (e1 == SymbolOLD.PType.ERROR || e2 == SymbolOLD.PType.ERROR)
+                exprType.put(ctx, SymbolOLD.PType.ERROR);
+            else if (e1 == SymbolOLD.PType.INT && e2 == SymbolOLD.PType.INT)
+                exprType.put(ctx, SymbolOLD.PType.INT);
+            else if (e1 == SymbolOLD.PType.FLOAT && e2 == SymbolOLD.PType.FLOAT)
+                exprType.put(ctx, SymbolOLD.PType.FLOAT);
+            else if (e1 == SymbolOLD.PType.FLOAT && e2 == SymbolOLD.PType.INT)
+                exprType.put(ctx, SymbolOLD.PType.FLOAT);
+            else if (e1 == SymbolOLD.PType.INT && e2 == SymbolOLD.PType.FLOAT)
+                exprType.put(ctx, SymbolOLD.PType.FLOAT);
             else {
                 this.validated = false;
                 semanticErrors++;
-                exprType.put(ctx, new Type(Type.PType.ERROR));
-                System.err.println("Invalid types for '%' operator '" + e1.toString() + "' , '" + e2.toString() + ". '%' is only valid for 'INT' types, on line " + ctx.start.getLine());
+                exprType.put(ctx, SymbolOLD.PType.ERROR);
+                System.err.println("Invalid types for '*' or '/' operator '" + e1.toString() + "', '" + e2.toString() + "' on line " + ctx.start.getLine());
+            }
+        } else if (op == OperatorOLD.PType.REM) {
+            SymbolOLD.PType e1 = exprType.get(ctx.expression_evaluation(0));
+            SymbolOLD.PType e2 = exprType.get(ctx.expression_evaluation(1));
+
+            if (e1 == SymbolOLD.PType.ERROR || e2 == SymbolOLD.PType.ERROR)
+                exprType.put(ctx, SymbolOLD.PType.ERROR);
+
+            if (e1 == SymbolOLD.PType.INT && e2 == SymbolOLD.PType.INT)
+                exprType.put(ctx, SymbolOLD.PType.INT);
+            else {
+                this.validated = false;
+                semanticErrors++;
+                exprType.put(ctx, SymbolOLD.PType.ERROR);
+                System.err.println("Invalid types for '%' operator '" + e1.toString() + "' , '" + e2.toString() + "' on line " + ctx.start.getLine());
             }
         } else {
             this.validated = false;
             semanticErrors++;
-            exprType.put(ctx, new Type(Type.PType.ERROR));
+            exprType.put(ctx, SymbolOLD.PType.ERROR);
             System.err.println("Invalid operator '" + op.toString() + "' on line " + ctx.start.getLine());
         }
     }
@@ -403,42 +411,37 @@ public class RefChecker extends ProjetoBaseListener {
     // expression_evaluation = unary_operators expression_evaluation
     public void exitUnaryExp(Projeto.UnaryExpContext ctx) {
         String operator = ctx.start.getText();
-        Type e1 = exprType.get(ctx.expression_evaluation());
+        SymbolOLD.PType e1 = exprType.get(ctx.expression_evaluation());
 
         switch (operator) {
             case "+":
             case "-":
-                if (Type.isNumeric(e1) ) exprType.put(ctx, e1);
+                if (e1 == SymbolOLD.PType.INT || e1 == SymbolOLD.PType.FLOAT) exprType.put(ctx, e1);
                 else {
                     this.validated = false;
                     semanticErrors++;
-                    exprType.put(ctx, new Type(Type.PType.ERROR));
+                    exprType.put(ctx, SymbolOLD.PType.ERROR);
                     System.err.println("Invalid operand type '" + e1.toString() + "' on line " + ctx.start.getLine());
                 }
                 break;
             case "~":
-                if (e1.getPrimitiveType() == Type.PType.BOOL) exprType.put(ctx, e1);
+                if (e1 == SymbolOLD.PType.BOOL) exprType.put(ctx, e1);
                 else {
                     this.validated = false;
                     semanticErrors++;
-                    exprType.put(ctx, new Type(Type.PType.ERROR));
+                    exprType.put(ctx, SymbolOLD.PType.ERROR);
                     System.err.println("Invalid operand type '" + e1.toString() + "' on line " + ctx.start.getLine());
                 }
                 break;
             case "?":
-                if (pointerExtr.get(ctx.expression_evaluation()) == null) {
-                    this.validated = false;
-                    semanticErrors++;
-                    exprType.put(ctx, new Type(Type.PType.ERROR));
-                    System.err.println("Can only assign '?' to variables or pointer indexing, on line " + ctx.start.getLine());
-                }
-                if (Type.isPrimitive(e1)) {
-                    Type primitivePointer = e1.extractPointerType();
+                if (SymbolOLD.isPrimitive(e1)) {
+                    System.out.println(e1);
+                    SymbolOLD.PType primitivePointer = primitiveToPointer(e1);
                     exprType.put(ctx, primitivePointer);
                 } else {
                     this.validated = false;
                     semanticErrors++;
-                    exprType.put(ctx, new Type(Type.PType.ERROR));
+                    exprType.put(ctx, SymbolOLD.PType.ERROR);
                     System.err.println("Invalid type '" + e1 + "' on line " + ctx.start.getLine());
                 }
                 break;
@@ -448,47 +451,36 @@ public class RefChecker extends ProjetoBaseListener {
 
     // expression_evaluation = expression_evaluation LBRACKET expression_evaluation RBRACKET
     public void exitPointerExp(Projeto.PointerExpContext ctx) {
-        Type e1 = exprType.get(ctx.expression_evaluation(0));
-        Type e2 = exprType.get(ctx.expression_evaluation(1));
+        SymbolOLD.PType e1 = exprType.get(ctx.expression_evaluation(0));
+        SymbolOLD.PType e2 = exprType.get(ctx.expression_evaluation(1));
 
-        if (!(e1.isPointer() && (e1.getPrimitiveType() == Type.PType.BOOL || e1.getPrimitiveType() == Type.PType.INT ||
-                e1.getPrimitiveType() == Type.PType.FLOAT || e1.getPrimitiveType() == Type.PType.STRING))) {
+        if (!(e1 == SymbolOLD.PType.BOOL_POINTER || e1 == SymbolOLD.PType.INT_POINTER || e1 == SymbolOLD.PType.FLOAT_POINTER || e1 == SymbolOLD.PType.STRING_POINTER)) {
             this.validated = false;
             semanticErrors++;
-            exprType.put(ctx, new Type(Type.PType.ERROR));
+            exprType.put(ctx, SymbolOLD.PType.ERROR);
             System.err.println("Invalid type for : " + e1 + "[" + e2 + "]" + " on line " + ctx.start.getLine());
         }
-        if (e2.getPrimitiveType() != Type.PType.INT) {
+        if (e2 != SymbolOLD.PType.INT) {
             this.validated = false;
             semanticErrors++;
-            exprType.put(ctx, new Type(Type.PType.ERROR));
+            exprType.put(ctx, SymbolOLD.PType.ERROR);
             System.err.println("E2 is not an 'INT' but a '" + e2.toString() + "' on line " + ctx.start.getLine());
         }
-        exprType.put(ctx, e1.extractValueType());
-        pointerExtr.put(ctx, true);
+        exprType.put(ctx, pointerToPrimitive(e1));
     }
 
 
     //  expression_evaluation : LPAREN expression_evaluation RPAREN
     public void exitParenExp(Projeto.ParenExpContext ctx) {
-        Type expressionType = exprType.get(ctx.expression_evaluation());
+        SymbolOLD.PType expressionType = exprType.get(ctx.expression_evaluation());
         exprType.put(ctx, expressionType);
-        if (pointerExtr.get(ctx.expression_evaluation()) != null) {
-            boolean result = pointerExtr.get(ctx.expression_evaluation());
-            pointerExtr.put(ctx, result);
-        }
     }
 
 
     // expression_evaluation : simple_expression
     public void exitSimpExp(Projeto.SimpExpContext ctx) {
-        Type expressionType = exprType.get(ctx.simple_expression());
-
+        SymbolOLD.PType expressionType = exprType.get(ctx.simple_expression());
         exprType.put(ctx, expressionType);
-        if (pointerExtr.get(ctx.simple_expression()) != null) {
-            boolean result = pointerExtr.get(ctx.simple_expression());
-            pointerExtr.put(ctx, result);
-        }
 
     }
 
@@ -499,23 +491,23 @@ public class RefChecker extends ProjetoBaseListener {
 
     //expression_evaluation : expression_evaluation binary_op_ADD_SUB expression_evaluation
     public void exitAddSub(Projeto.AddSubContext ctx) {
-        Type e1 = exprType.get(ctx.expression_evaluation(0));
-        Type e2 = exprType.get(ctx.expression_evaluation(1));
+        SymbolOLD.PType e1 = exprType.get(ctx.expression_evaluation(0));
+        SymbolOLD.PType e2 = exprType.get(ctx.expression_evaluation(1));
 
-        if (e1.isError() || e2.isError())
-            exprType.put(ctx, new Type(Type.PType.ERROR));
-        else if (Type.isNumeric(e1) && Type.isNumeric(e2)) {
-            if (e1.getPrimitiveType() == Type.PType.INT && e2.getPrimitiveType() == Type.PType.INT)
-                exprType.put(ctx, new Type(Type.PType.INT));
+        if (e1 == SymbolOLD.PType.ERROR || e2 == SymbolOLD.PType.ERROR)
+            exprType.put(ctx, SymbolOLD.PType.ERROR);
+        else if ((e1 == SymbolOLD.PType.INT || e1 == SymbolOLD.PType.FLOAT) && (e2 == SymbolOLD.PType.FLOAT || e2 == SymbolOLD.PType.INT)) {
+            if (e1 == SymbolOLD.PType.INT && e2 == SymbolOLD.PType.INT)
+                exprType.put(ctx, SymbolOLD.PType.INT);
             else {
-                exprType.put(ctx, new Type(Type.PType.FLOAT));
+                exprType.put(ctx, SymbolOLD.PType.FLOAT);
             }
-        } else if (e1.isPointer() && Type.isPrimitive(e1)  && e2.getPrimitiveType() == Type.PType.INT) {
+        } else if (SymbolOLD.isAPrimitivePointer(e1) && e2 == SymbolOLD.PType.INT) {
             exprType.put(ctx, e1);
         } else {
             this.validated = false;
             semanticErrors++;
-            exprType.put(ctx, new Type(Type.PType.ERROR));
+            exprType.put(ctx, SymbolOLD.PType.ERROR);
             System.err.println("Operator '" + ctx.binary_op_ADD_SUB().getText() + "' cannot be applied to '" + e1 + "', '" + e2 + "' on line " + ctx.start.getLine());
         }
 
@@ -523,17 +515,17 @@ public class RefChecker extends ProjetoBaseListener {
 
     //simple_expression:    INTEGER
     public void exitInt(Projeto.IntContext ctx) {
-        exprType.put(ctx, new Type(Type.PType.INT));
+        exprType.put(ctx, SymbolOLD.PType.INT);
     }
 
     //simple_expression:    REAL
     public void exitReal(Projeto.RealContext ctx) {
-        exprType.put(ctx, new Type(Type.PType.FLOAT));
+        exprType.put(ctx, SymbolOLD.PType.FLOAT);
     }
 
     //simple_expression:    STRING
     public void exitString(Projeto.StringContext ctx) {
-        exprType.put(ctx, new Type(Type.PType.STRING));
+        exprType.put(ctx, SymbolOLD.PType.STRING);
     }
 
     //    binary_op_MUL_DIV_REM: MUL
@@ -585,19 +577,17 @@ public class RefChecker extends ProjetoBaseListener {
 
     //    simple_expression: NULL
     public void exitNull(Projeto.NullContext ctx) {
-//        System.out.println( new Type("null"));
-        exprType.put(ctx, new Type("null"));
-//        System.out.println(exprType.get(ctx));
+        exprType.put(ctx, SymbolOLD.PType.NULL_POINTER);
     }
 
     //    simple_expression: NULL
     public void exitTrue(Projeto.TrueContext ctx) {
-        exprType.put(ctx, new Type(Type.PType.BOOL));
+        exprType.put(ctx, SymbolOLD.PType.BOOL);
     }
 
     //    simple_expression: NULL
     public void exitFalse(Projeto.FalseContext ctx) {
-        exprType.put(ctx, new Type(Type.PType.BOOL));
+        exprType.put(ctx, SymbolOLD.PType.BOOL);
     }
 
 
@@ -625,64 +615,60 @@ public class RefChecker extends ProjetoBaseListener {
     // (IDENTIFIER | expression) EQUAL expression;
     public void exitAttribution_instruction(Projeto.Attribution_instructionContext ctx) {
         this.currentFunction.hasIns = true;
-        Type leftSide;
-        Type rightSide;
+        SymbolOLD.PType leftSide;
+        SymbolOLD.PType rightSide;
         if (ctx.IDENTIFIER() == null) {
             leftSide = this.exprType.get(ctx.expression(0));
             rightSide = this.exprType.get(ctx.expression(1));
-        } else if (this.currentScope.resolve(ctx.IDENTIFIER().getText()) == null) {
+        } else if (this.currentScopeOLD.resolve(ctx.IDENTIFIER().getText()) == null) {
             this.validated = false;
             this.semanticErrors++;
             System.err.println("Undefined variable '" + ctx.IDENTIFIER().getText() + "' on line " + ctx.IDENTIFIER().getSymbol().getLine() + " position " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
             return;
         } else {
-            leftSide = this.currentScope.resolve(ctx.IDENTIFIER().getText()).type;
+            leftSide = this.currentScopeOLD.resolve(ctx.IDENTIFIER().getText()).type;
             rightSide = this.exprType.get(ctx.expression(0));
         }
-//        System.out.println("Left is " + leftSide + " and right side is " + rightSide);
-        if (!Type.isConvertibleTo(rightSide,leftSide)) {
-            if (rightSide.getPrimitiveType() == Type.PType.VOID) {
-
+        if (!SymbolOLD.isCastingPossible(leftSide, rightSide))
+            if (rightSide == SymbolOLD.PType.VOID) {
                 this.validated = false;
                 this.semanticErrors++;
                 System.err.println("Incompatible types: '" + rightSide + "' cannot be converted to '" + leftSide + "' on line: " + ctx.start.getLine());
-            } else if (!rightSide.equals(leftSide)) {
+            } else if (rightSide != leftSide) {
                 this.validated = false;
                 this.semanticErrors++;
                 System.err.println("Incompatible types: '" + rightSide + "' cannot be converted to '" + leftSide + "' on line: " + ctx.start.getLine());
             }
-        }
     }
 
 
     //expr --> ID;
     public void exitVar(Projeto.VarContext ctx) {
         String variableName = ctx.IDENTIFIER().getText();
-        Symbol s = this.currentScope.resolve(variableName);
+        SymbolOLD s = this.currentScopeOLD.resolve(variableName);
         if (s == null) {
             this.validated = false;
             this.semanticErrors++;
-            this.exprType.put(ctx, new Type(Type.PType.ERROR));
+            this.exprType.put(ctx, SymbolOLD.PType.ERROR);
             System.err.println("Undefined variable '" + variableName + "' on line " + ctx.IDENTIFIER().getSymbol().getLine() + " position " + ctx.IDENTIFIER().getSymbol().getCharPositionInLine());
             return;
         }
 
-        if (s instanceof FunctionSymbol) {
+        if (s instanceof FunctionSymbolOLD) {
             this.validated = false;
             this.semanticErrors++;
-            this.exprType.put(ctx, new Type(Type.PType.ERROR));
+            this.exprType.put(ctx, SymbolOLD.PType.ERROR);
             System.err.println("Using function symbol '" + variableName + "' as variable on line " + ctx.IDENTIFIER().getSymbol().getLine());
             return;
         }
         this.exprType.put(ctx, s.type);
-        this.pointerExtr.put(ctx, true);
     }
 
     //write_function: WRITE LPAREN list_expressions? RPAREN;
     public void exitWrite_function(Projeto.Write_functionContext ctx) {
         for (Projeto.ExpressionContext expression :
                 ctx.list_expressions().expression()) {
-            if (!Type.isPrimitive(exprType.get(expression))) {
+            if (!SymbolOLD.isPrimitive(exprType.get(expression))) {
                 this.validated = false;
                 this.semanticErrors++;
                 System.err.println("Write function can only receive primitive type arguments. Line : " + ctx.start.getLine());
@@ -695,7 +681,7 @@ public class RefChecker extends ProjetoBaseListener {
     public void exitWriteln_fuction(Projeto.Writeln_fuctionContext ctx) {
         for (Projeto.ExpressionContext expression :
                 ctx.list_expressions().expression()) {
-            if (!Type.isPrimitive(exprType.get(expression))) {
+            if (!SymbolOLD.isPrimitive(exprType.get(expression))) {
                 this.validated = false;
                 this.semanticErrors++;
                 System.err.println("Writeln function can only receive primitive type arguments. Line : " + ctx.start.getLine());
@@ -707,9 +693,33 @@ public class RefChecker extends ProjetoBaseListener {
 //------------------------------------------AUXILIAR METHODS-------------------------------------------------//
 
 
+    //converts primitive type to a pointer type
+    private SymbolOLD.PType primitiveToPointer(SymbolOLD.PType e1) {
+        if (e1 == SymbolOLD.PType.BOOL)
+            return SymbolOLD.PType.BOOL_POINTER;
+        else if (e1 == SymbolOLD.PType.INT)
+            return SymbolOLD.PType.INT_POINTER;
+        else if (e1 == SymbolOLD.PType.FLOAT)
+            return SymbolOLD.PType.FLOAT_POINTER;
+        else if (e1 == SymbolOLD.PType.STRING)
+            return SymbolOLD.PType.STRING_POINTER;
+        else
+            return SymbolOLD.PType.ERROR;
+    }
 
-
-
+    //converts primitive type to a pointer type
+    private SymbolOLD.PType pointerToPrimitive(SymbolOLD.PType e1) {
+        if (e1 == SymbolOLD.PType.BOOL_POINTER)
+            return SymbolOLD.PType.BOOL;
+        else if (e1 == SymbolOLD.PType.FLOAT_POINTER)
+            return SymbolOLD.PType.FLOAT;
+        else if (e1 == SymbolOLD.PType.STRING_POINTER)
+            return SymbolOLD.PType.STRING;
+        else if (e1 == SymbolOLD.PType.INT_POINTER)
+            return SymbolOLD.PType.INT;
+        else
+            return SymbolOLD.PType.ERROR;
+    }
 
 //    //gets index of first 'result' in list of instructions or variables
 //    public int checkResultIndex(List<Projeto.Var_or_instructionContext> listOfVarsOrIns) {
@@ -861,13 +871,13 @@ public int checkResultLine(List<Projeto.Var_or_instructionContext> listOfVarsOrI
 
 
     //defines symbol in the scope
-    private void defineSymbol(ParserRuleContext ctx, Symbol s) {
-        if (!this.currentScope.define(s)) {
+    private void defineSymbol(ParserRuleContext ctx, SymbolOLD s) {
+        if (!this.currentScopeOLD.define(s)) {
             this.validated = false;
             this.semanticErrors++;
             System.err.println("Redefining previously defined variable '" + s.name + "' on line " + ctx.start.getLine());
             return;
         }
-        this.scopes.put(ctx, currentScope);
+        this.scopes.put(ctx, currentScopeOLD);
     }
 }
