@@ -1,0 +1,44 @@
+int alg(int n, <string> args) {
+int resultado;
+resultado = f(3, 'artur',false);
+return -0;
+}
+
+
+void vazia ( ) {
+return;
+}
+
+
+
+int f(int numero, string cadeia, bool boolean)
+{
+writeln(1);
+writeln(true);
+writeln(false, 1, 2);
+
+<bool> p = [3];
+int ab  = 1;
+<int> fasdfasdg = ?ab;
+<void> vazio = null;
+int artur = 1;
+cadeia = 'afdasf';
+int esquisito1 = 1 + (2 * f(5,'a',true));
+p = ?p[2];
+bool xpto = true;
+bool a = ~((?p[2])[0]&&xpto) == true;
+int b = 1/ 2;
+b = 2 % 1;
+b = (1)+(1*2/2)%2;
+bool fasdf = 1.2 >= 2.0;
+fasdf = 'adf' == 'a';
+fasdf = p == vazio;
+fasdf = p == null;
+return 0;
+}
+
+
+
+
+
+

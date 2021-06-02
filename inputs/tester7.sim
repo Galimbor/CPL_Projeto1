@@ -1,4 +1,3 @@
-##certo
 
 int lol(int size, float oi)
 {
@@ -36,6 +35,6 @@ int lol(int size, float oi)
     return 2;
 }
 
-int alg( int size , <string> args){
+int alg( int n , <string> args){
     return 2;
 }

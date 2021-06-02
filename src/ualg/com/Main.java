@@ -14,10 +14,10 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) {
         try {
-            ProjetoLexer simpleLexer = new ProjetoLexer(CharStreams.fromFileName("tester9.sim"));
+            ProjetoLexer simpleLexer = new ProjetoLexer(CharStreams.fromFileName("inputs/final1.sim"));
             Projeto simpleParser = new Projeto(new CommonTokenStream(simpleLexer));
             ParseTree tree = simpleParser.program();
-            System.out.println("syntatic parsing finished");
+            System.out.println("Syntatic parsing finished");
             // create a standard ANTLR parse tree walker
             ParseTreeWalker walker = new ParseTreeWalker();
             // create listener then feed to walker
@@ -26,6 +26,7 @@ public class Main {
             walker.walk(type_listener, tree);
             RefChecker ref_listener = new RefChecker(type_listener.scopes, type_listener.exprType, type_listener.functions, type_listener.validated);
             walker.walk(ref_listener, tree);
+            System.out.println("...");
             if (!ref_listener.validated) {
                 int semanticErrors = type_listener.semanticErrors + ref_listener.semanticErrors;
                 System.err.println("There was(were) " + semanticErrors + " semantic error(errors)");

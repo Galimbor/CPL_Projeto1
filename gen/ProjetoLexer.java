@@ -25,7 +25,7 @@ public class ProjetoLexer extends Lexer {
 		RBLOCK=41, LBRACKET=42, RBRACKET=43, ADD=44, SUB=45, MUL=46, DIV=47, QUESTION=48, 
 		PERCENT=49, GREATER=50, LESSER=51, GREATEQ=52, LESSEQ=53, EQUALS=54, NOTEQUALS=55, 
 		TILT=56, AND=57, OR=58, EQUAL=59, INSERT=60, EXTRACT=61, AT=62, INTEGER=63, 
-		REAL=64, STRING_=65, START_STRING=66;
+		REAL=64, STRING_LIT=65, START_STRING=66;
 	public static final int
 		STRING_MODE=1;
 	public static String[] channelNames = {
@@ -47,7 +47,7 @@ public class ProjetoLexer extends Lexer {
 			"LPAREN", "RPAREN", "LBLOCK", "RBLOCK", "LBRACKET", "RBRACKET", "ADD", 
 			"SUB", "MUL", "DIV", "QUESTION", "PERCENT", "GREATER", "LESSER", "GREATEQ", 
 			"LESSEQ", "EQUALS", "NOTEQUALS", "TILT", "AND", "OR", "EQUAL", "INSERT", 
-			"EXTRACT", "AT", "DIGIT", "INTEGER", "REAL", "START_STRING", "STRING_"
+			"EXTRACT", "AT", "DIGIT", "INTEGER", "REAL", "START_STRING", "STRING_LIT"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -75,7 +75,7 @@ public class ProjetoLexer extends Lexer {
 			"SEMI_COLON", "IDENTIFIER", "LPAREN", "RPAREN", "LBLOCK", "RBLOCK", "LBRACKET", 
 			"RBRACKET", "ADD", "SUB", "MUL", "DIV", "QUESTION", "PERCENT", "GREATER", 
 			"LESSER", "GREATEQ", "LESSEQ", "EQUALS", "NOTEQUALS", "TILT", "AND", 
-			"OR", "EQUAL", "INSERT", "EXTRACT", "AT", "INTEGER", "REAL", "STRING_", 
+			"OR", "EQUAL", "INSERT", "EXTRACT", "AT", "INTEGER", "REAL", "STRING_LIT", 
 			"START_STRING"
 		};
 	}

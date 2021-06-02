@@ -7,8 +7,6 @@ import Symbols.Symbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class RefChecker extends ProjetoBaseListener {
@@ -18,6 +16,7 @@ public class RefChecker extends ProjetoBaseListener {
     public ParseTreeProperty<Scope> scopes;
     public ParseTreeProperty<FunctionSymbol> functions;
     public ParseTreeProperty<Symbol.PType> exprType;
+    public ParseTreeProperty<Boolean> pointerExtr = new ParseTreeProperty<>();
     ParseTreeProperty<Operator.PType> opType = new ParseTreeProperty<>();
     private FunctionSymbol currentFunction;
 
@@ -59,11 +58,19 @@ public class RefChecker extends ProjetoBaseListener {
                     if (!calledArg.equals(declaredArg)) {
                         this.validated = false;
                         this.semanticErrors++;
+                        this.exprType.put(ctx, Symbol.PType.ERROR);
                         System.err.println("Arguments of function '" + functionName + "' do not match the arguments " +
                                 "declared in the function declaration on line " + ctx.start.getLine());
                         return;
                     }
                 }
+            } else if (ctx.list_expressions() != null) {
+                this.validated = false;
+                this.semanticErrors++;
+                this.exprType.put(ctx, Symbol.PType.ERROR);
+                System.err.println("Number of arguments of function '" + functionName + "' do not match the number of arguments " +
+                        "declared in the function declaration on line " + ctx.start.getLine());
+                return;
             }
             this.exprType.put(ctx, s.type);
         }
@@ -344,19 +351,20 @@ public class RefChecker extends ProjetoBaseListener {
         String name = ctx.IDENTIFIER().getText();
         Symbol type = new Symbol(stype, name);
 
-        if (Symbol.isAPrimitivePointer(type.type)) {
-            Symbol.PType expression = exprType.get(ctx.expression());
-            if (expression != Symbol.PType.INT) {
-                this.validated = false;
-                semanticErrors++;
-                System.err.println("Expression should be of type int but is of type '" + expression + "' on line " + ctx.start.getLine());
-            }
-        } else {
+        Symbol.PType expression = exprType.get(ctx.expression());
+        if (!Symbol.isAPrimitivePointer(type.type)) {
             this.validated = false;
             semanticErrors++;
-            System.err.println("Invalid variable type '" + stype + "' of variable '" + name + "' on line " + ctx.start.getLine());
+            System.err.println("Invalid variable type '" + stype + "' of variable '" + name + "', pointer must be of a primitive type, on line " + ctx.start.getLine());
+        }
+
+        if (expression != Symbol.PType.INT) {
+            this.validated = false;
+            semanticErrors++;
+            System.err.println("Incompatible type " + type.type + "[" + expression + "]" + " on line " + ctx.start.getLine());
         }
         defineSymbol(ctx, new Symbol(ctx.type().start.getText(), ctx.IDENTIFIER().getText()));
+
     }
 
 
@@ -397,7 +405,7 @@ public class RefChecker extends ProjetoBaseListener {
                 this.validated = false;
                 semanticErrors++;
                 exprType.put(ctx, Symbol.PType.ERROR);
-                System.err.println("Invalid types for '%' operator '" + e1.toString() + "' , '" + e2.toString() + "' on line " + ctx.start.getLine());
+                System.err.println("Invalid types for '%' operator '" + e1.toString() + "' , '" + e2.toString() + ". '%' is only valid for 'INT' types, on line " + ctx.start.getLine());
             }
         } else {
             this.validated = false;
@@ -406,6 +414,7 @@ public class RefChecker extends ProjetoBaseListener {
             System.err.println("Invalid operator '" + op.toString() + "' on line " + ctx.start.getLine());
         }
     }
+
 
     // expression_evaluation = unary_operators expression_evaluation
     public void exitUnaryExp(Projeto.UnaryExpContext ctx) {
@@ -433,8 +442,13 @@ public class RefChecker extends ProjetoBaseListener {
                 }
                 break;
             case "?":
+                if (pointerExtr.get(ctx.expression_evaluation()) == null) {
+                    this.validated = false;
+                    semanticErrors++;
+                    exprType.put(ctx, Symbol.PType.ERROR);
+                    System.err.println("Can only assign '?' to variables or pointer indexing, on line " + ctx.start.getLine());
+                }
                 if (Symbol.isPrimitive(e1)) {
-                    System.out.println(e1);
                     Symbol.PType primitivePointer = primitiveToPointer(e1);
                     exprType.put(ctx, primitivePointer);
                 } else {
@@ -466,6 +480,7 @@ public class RefChecker extends ProjetoBaseListener {
             System.err.println("E2 is not an 'INT' but a '" + e2.toString() + "' on line " + ctx.start.getLine());
         }
         exprType.put(ctx, pointerToPrimitive(e1));
+        pointerExtr.put(ctx, true);
     }
 
 
@@ -473,6 +488,10 @@ public class RefChecker extends ProjetoBaseListener {
     public void exitParenExp(Projeto.ParenExpContext ctx) {
         Symbol.PType expressionType = exprType.get(ctx.expression_evaluation());
         exprType.put(ctx, expressionType);
+        if (pointerExtr.get(ctx.expression_evaluation()) != null) {
+            boolean result = pointerExtr.get(ctx.expression_evaluation());
+            pointerExtr.put(ctx, result);
+        }
     }
 
 
@@ -480,6 +499,11 @@ public class RefChecker extends ProjetoBaseListener {
     public void exitSimpExp(Projeto.SimpExpContext ctx) {
         Symbol.PType expressionType = exprType.get(ctx.simple_expression());
         exprType.put(ctx, expressionType);
+        if (pointerExtr.get(ctx.simple_expression()) != null) {
+            boolean result = pointerExtr.get(ctx.simple_expression());
+            pointerExtr.put(ctx, result);
+        }
+
 
     }
 
@@ -661,6 +685,8 @@ public class RefChecker extends ProjetoBaseListener {
             return;
         }
         this.exprType.put(ctx, s.type);
+        this.pointerExtr.put(ctx, true);
+
     }
 
     //write_function: WRITE LPAREN list_expressions? RPAREN;
@@ -720,38 +746,6 @@ public class RefChecker extends ProjetoBaseListener {
             return Symbol.PType.ERROR;
     }
 
-//    //gets index of first 'result' in list of instructions or variables
-//    public int checkResultIndex(List<Projeto.Var_or_instructionContext> listOfVarsOrIns) {
-//        int result = -1;
-//        int i = 0;
-//        for (Projeto.Var_or_instructionContext listOfVarsOrIn : listOfVarsOrIns) {
-//            if (listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().subblock_instruction() != null) {
-//                result = checkResultSubblock(listOfVarsOrIn.instruction().subblock_instruction(), i);
-//                if (result != -1) break;
-//            } else if (listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().start.getText().equals("return")) {
-//                result = i;
-//                break;
-//            }
-//            i++;
-//        }
-//        System.out.println("The result is " + result);
-//        return result;
-//    }
-
-
-    public int countInstrutions(List<Projeto.Var_or_instructionContext> listOfVarsOrIns) {
-        int result = 0;
-        for (Projeto.Var_or_instructionContext listOfVarsOrIn : listOfVarsOrIns) {
-
-            if (listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().subblock_instruction() != null) {
-                result = countSubblockInstructions(listOfVarsOrIn.instruction().subblock_instruction(), result + 1);
-            } else {
-                result++;
-            }
-
-        }
-        return result;
-    }
 
     public int countInstrutionsLinha(List<Projeto.Var_or_instructionContext> listOfVarsOrIns) {
         int lastElementIndex = listOfVarsOrIns.size() - 1;
@@ -780,7 +774,6 @@ public class RefChecker extends ProjetoBaseListener {
                 } else {
                     linha = ins.start.getLine();
                 }
-
             }
         } else if (ctx.subblock_instruction() != null) {
             for (Projeto.InstructionContext ins : ctx.subblock_instruction().instruction()
@@ -797,21 +790,8 @@ public class RefChecker extends ProjetoBaseListener {
     }
 
 
-    private int countSubblockInstructions(Projeto.Subblock_instructionContext ctx, int result) {
-        for (Projeto.InstructionContext ins : ctx.instruction()
-        ) {
-            if (ins.subblock_instruction() != null) {
-                result = countSubblockInstructions(ins.subblock_instruction(), result + 1);
-            } else {
-                result++;
-            }
-        }
-        return result;
-    }
-
-
     //gets index of first 'result' in list of instructions or variables
-public int checkResultLine(List<Projeto.Var_or_instructionContext> listOfVarsOrIns) {
+    public int checkResultLine(List<Projeto.Var_or_instructionContext> listOfVarsOrIns) {
         int line = -1;
         for (Projeto.Var_or_instructionContext listOfVarsOrIn : listOfVarsOrIns) {
             if (listOfVarsOrIn.instruction() != null && listOfVarsOrIn.instruction().subblock_instruction() != null) {
@@ -821,7 +801,6 @@ public int checkResultLine(List<Projeto.Var_or_instructionContext> listOfVarsOrI
                 line = listOfVarsOrIn.instruction().start.getLine();
                 break;
             }
-
         }
         return line;
     }
@@ -842,31 +821,6 @@ public int checkResultLine(List<Projeto.Var_or_instructionContext> listOfVarsOrI
         }
         return -1;
     }
-
-
-//    public int checkResultSubblock(Projeto.Subblock_instructionContext ctx, int index) {
-//        int result = index;
-//        for (Projeto.InstructionContext ins : ctx.instruction()
-//        ) {
-//            if (ins.subblock_instruction() != null) {
-//                result++;
-//                index++;
-//                result = checkResultSubblock(ins.subblock_instruction(), result);
-//                if (result != -1) {
-//                    return result;
-//                }
-//
-//                result = index;
-//                result += ins.subblock_instruction().instruction().size();
-//
-//            } else if (ins.control_instructions() != null && ins.control_instructions().start.getText().equals("return")) {
-//                return result;
-//            }
-//            result++;
-//            index++;
-//        }
-//        return -1;
-//    }
 
 
     //defines symbol in the scope

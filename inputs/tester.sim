@@ -1,6 +1,10 @@
-## ta certo
+int alg(int n, <string> args) {
+return 1;
+}
 
-int lol(int size, float oi)
+
+
+int test(int size, float oi)
 {
     int j;
     {
@@ -9,13 +13,10 @@ int lol(int size, float oi)
             2+2;
             j = 2;
             {
+        leave;
             }
-            leave;
         }
     }
     return 2;
 }
 
-int alg( int n , <string> args){
-    return 2;
-}

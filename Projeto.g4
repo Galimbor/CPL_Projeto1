@@ -60,7 +60,7 @@ expression:
 simple_expression:
         INTEGER                 # Int
     |   REAL                    # Real
-    |   STRING                  # String
+    |   STRING_LIT              # String
     |   NULL                    # Null
     |   TRUE                    # True
     |   FALSE                   # False

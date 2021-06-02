@@ -19,11 +19,12 @@ public class TypeChecker extends ProjetoBaseListener {
     public Stack<Boolean> isInsideWhile = new Stack<>();
     public Stack<Boolean> isInsideSubBlock = new Stack<>();
 
+
     public ParseTreeProperty<Symbol.PType> exprType = new ParseTreeProperty<>();
     public ParseTreeProperty<Scope> scopes = new ParseTreeProperty<>();
     public ParseTreeProperty<FunctionSymbol> functions = new ParseTreeProperty<>();
     private FunctionSymbol currentFunction;
-    private HashSet<Integer> leaveAndRestart = new HashSet<>();
+    private final HashSet<Integer> leaveAndRestart = new HashSet<>();
 
     //program :
     //        EOF {notifyErrorListeners("Program must have at least one declaration");}
@@ -44,6 +45,7 @@ public class TypeChecker extends ProjetoBaseListener {
         if (!haveAlg)
             System.err.println("Must declare alg(int n, <string> args) function");
     }
+
 
     //var_declaration_simple:type IDENTIFIER ((COMMA IDENTIFIER)+)* ;
     public void exitVar_declaration_simple(Projeto.Var_declaration_simpleContext ctx) {
@@ -159,12 +161,9 @@ public class TypeChecker extends ProjetoBaseListener {
                 } else if (!this.leaveAndRestart.contains(leaveOrRestartLine) && lastLine != -1 && leaveOrRestartLine < lastLine) {
                     this.validated = false;
                     this.semanticErrors++;
-
-                    System.out.println("Last line is " + lastLine + " and leave line is " + leaveOrRestartLine);
                     System.err.println("Leave or restart instruction on function " + this.currentFunction.name + " is not the last instruction of the sub block. Line: " + leaveOrRestartLine);
                     this.leaveAndRestart.add(leaveOrRestartLine);
-                }
-                else {
+                } else {
                     this.leaveAndRestart.add(leaveOrRestartLine);
                 }
 
@@ -175,7 +174,7 @@ public class TypeChecker extends ProjetoBaseListener {
 
     //control_instructions: LEAVE
     public void exitLeave(Projeto.LeaveContext ctx) {
-        if ( this.isInsideWhile.empty()  || this.isInsideSubBlock.empty()) {
+        if (this.isInsideWhile.empty() || this.isInsideSubBlock.empty()) {
             this.validated = false;
             this.semanticErrors++;
             System.err.println("The leave instruction declared in line " + ctx.start.getLine() + " needs to be inside the sub block of a cycle.");
@@ -185,7 +184,7 @@ public class TypeChecker extends ProjetoBaseListener {
 
     //control_instructions: RESTART
     public void exitRestart(Projeto.RestartContext ctx) {
-        if (this.isInsideWhile.empty()  || this.isInsideSubBlock.empty()) {
+        if (this.isInsideWhile.empty() || this.isInsideSubBlock.empty()) {
             this.validated = false;
             this.semanticErrors++;
             System.err.println("The restart instruction declared in line " + ctx.start.getLine() + " needs to be inside the sub block of a cycle.");
@@ -194,22 +193,6 @@ public class TypeChecker extends ProjetoBaseListener {
 
 
     //-------------------------------- HELPER METHODS-----------------------------------------------//
-
-
-//    //checks index of first 'restart' or 'leave' in list of instructions
-//    public int checkLeaveOrRestartIndex(List<Projeto.InstructionContext> listOfIns) {
-//        int result = -1;
-//        int i = 0;
-//        for (Projeto.InstructionContext listOfIn : listOfIns) {
-//            if (listOfIn.start.getText().equals("restart") || listOfIn.start.getText().equals("leave")) {
-//                result = i;
-//                break;
-//            }
-//            i++;
-//        }
-//        return result;
-//    }
-
 
     public int checkLeaveOrRestartSubblockLines(Projeto.InstructionContext ctx, int line) {
         if (ctx.cicle_instruction() != null) {
